@@ -1,0 +1,28 @@
+{{define "base"}}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{{template "title" .}} - See My Family</title>
+        <link rel="stylesheet" href="/static/css/main.css" />
+        {{block "head" .}}{{end}}
+    </head>
+    <body>
+        <nav>
+            <div class="nav-links">
+                <a href="/" {{if eq .Page "home"}}class="active"{{end}}>Home</a>
+                <a href="/map" {{if eq .Page "map"}}class="active"{{end}}>Map</a>
+                <a href="/info" {{if eq .Page "info"}}class="active"{{end}}>Info</a>
+            </div>
+            <div class="nav-user">
+                {{if .UserName}}<span>{{.UserName}}</span>{{end}}
+            </div>
+        </nav>
+        <main>
+            {{template "main" .}}
+        </main>
+        {{block "scripts" .}}{{end}}
+    </body>
+</html>
+{{end}}

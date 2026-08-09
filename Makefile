@@ -23,7 +23,7 @@ admin:
 
 run: services migrate fixtures superuser
 	cd admin && uv run python manage.py runserver 8000 &
-	air
+	set -a; . ./.env; set +a; air
 
 down:
 	@pkill -f 'tmp/web' || true

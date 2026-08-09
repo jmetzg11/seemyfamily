@@ -1,0 +1,50 @@
+{{define "title"}}Home{{end}}
+
+{{define "main"}}
+<div class="toolbar">
+    <form method="GET" action="/">
+        <input type="search" name="q" value="{{.Search}}" placeholder="Search by name..." />
+        <input type="hidden" name="sort" value="{{.Sort}}" />
+        <input type="hidden" name="dir" value="{{.Dir}}" />
+        <button type="submit">Search</button>
+    </form>
+
+    <div class="pager">
+        {{if .HasPrev}}<a href="{{.PageURL .PrevPage}}">&larr;</a>{{else}}<span class="disabled">&larr;</span>{{end}}
+        <span>Page {{.CurrentPage}} of {{.TotalPages}}</span>
+        {{if .HasNext}}<a href="{{.PageURL .NextPage}}">&rarr;</a>{{else}}<span class="disabled">&rarr;</span>{{end}}
+    </div>
+</div>
+
+<table class="people">
+    <thead>
+        <tr>
+            <th><a href="{{.SortURL "name"}}">Name{{.SortIcon "name"}}</a></th>
+            <th><a href="{{.SortURL "location"}}">Location{{.SortIcon "location"}}</a></th>
+            <th><a href="{{.SortURL "birthyear"}}">Birth Year{{.SortIcon "birthyear"}}</a></th>
+            <th><a href="{{.SortURL "birthplace"}}">Birth Place{{.SortIcon "birthplace"}}</a></th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .People}}
+        <tr data-href="/person/{{.ID}}">
+            <td class="name-cell">
+                <img class="avatar rot-{{.Rotation}}" src="{{$.MediaURL}}/{{.Photo}}" alt="" />
+                <a href="/person/{{.ID}}">{{.Name}}</a>
+            </td>
+            <td>{{.Location}}</td>
+            <td>{{if .Birthyear}}{{.Birthyear}}{{end}}</td>
+            <td>{{.Birthplace}}</td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="4">No one found.</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/js/rows.js"></script>
+{{end}}

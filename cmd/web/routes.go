@@ -1,11 +1,18 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"seemyfamily.jmetzg11/ui"
+)
 
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /ping", ping)
+	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
-	return mux
+	mux.HandleFunc("GET /ping", ping)
+	mux.HandleFunc("GET /{$}", app.home)
+
+	return app.recoverPanic(commonHeaders(app.csp)(mux))
 }
