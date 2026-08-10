@@ -18,6 +18,7 @@ type application struct {
 	templateCache map[string]*template.Template
 	people        *models.PersonModel
 	users         *models.UserModel
+	stats         *models.InfoModel
 	mediaURL      string
 	csp           string
 	sessionSecret []byte
@@ -74,6 +75,7 @@ func main() {
 		templateCache: templateCache,
 		people:        &models.PersonModel{DB: pool},
 		users:         &models.UserModel{DB: pool},
+		stats:         &models.InfoModel{DB: pool},
 		mediaURL:      mediaURL,
 		csp:           buildCSP(mediaURL),
 		sessionSecret: []byte(sessionSecret),

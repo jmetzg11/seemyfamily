@@ -25,6 +25,10 @@ type templateData struct {
 
 	Form loginForm
 
+	Edits []models.Edit
+	Chart chart
+	Range string
+
 	People      []models.Person
 	Person      models.Person
 	Relations   []models.RelationGroup
