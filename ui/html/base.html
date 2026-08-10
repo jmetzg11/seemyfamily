@@ -13,10 +13,17 @@
             <div class="nav-links">
                 <a href="/" {{if eq .Page "home"}}class="active"{{end}}>Home</a>
                 <a href="/map" {{if eq .Page "map"}}class="active"{{end}}>Map</a>
-                <a href="/info" {{if eq .Page "info"}}class="active"{{end}}>Info</a>
+                {{if .IsAuthenticated}}<a href="/info" {{if eq .Page "info"}}class="active"{{end}}>Info</a>{{end}}
             </div>
             <div class="nav-user">
-                {{if .UserName}}<span>{{.UserName}}</span>{{end}}
+                {{if .IsAuthenticated}}
+                <span>{{.UserName}}</span>
+                <form method="POST" action="/logout">
+                    <button type="submit">Sign out</button>
+                </form>
+                {{else}}
+                <a href="/login">Sign in</a>
+                {{end}}
             </div>
         </nav>
         <main>

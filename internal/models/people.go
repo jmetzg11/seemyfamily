@@ -2,8 +2,10 @@ package models
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -12,13 +14,23 @@ type Person struct {
 	Name       string
 	Birthyear  int
 	Birthplace string
+	Bio        string
 	Location   string
 	Photo      string
 	Rotation   int
 }
 
-func (p Person) Degrees() int {
-	return p.Rotation * 90
+type Relative struct {
+	ID        int
+	Name      string
+	Birthyear int
+	Photo     string
+	Rotation  int
+}
+
+type RelationGroup struct {
+	Title  string
+	People []Relative
 }
 
 type PersonModel struct {
@@ -89,4 +101,129 @@ func (m *PersonModel) Count(ctx context.Context, search string) (int, error) {
 	var total int
 	err := m.DB.QueryRow(ctx, countQuery, "%"+search+"%").Scan(&total)
 	return total, err
+}
+
+const getQuery = `
+SELECT p.id,
+       p.name,
+       COALESCE(p.birthyear, 0),
+       COALESCE(p.birthplace, ''),
+       COALESCE(p.bio, ''),
+       COALESCE(l.name, ''),
+       COALESCE(ph.file_path, 'default.jpeg'),
+       COALESCE(ph.rotation, 0)
+FROM api_person p
+LEFT JOIN api_location l ON l.person_id = p.id
+LEFT JOIN LATERAL (
+    SELECT file_path, rotation
+    FROM api_photo
+    WHERE person_id = p.id AND profile_pic
+    ORDER BY id
+    LIMIT 1
+) ph ON true
+WHERE p.id = $1`
+
+func (m *PersonModel) Get(ctx context.Context, id int) (Person, error) {
+	var p Person
+
+	err := m.DB.QueryRow(ctx, getQuery, id).Scan(
+		&p.ID, &p.Name, &p.Birthyear, &p.Birthplace, &p.Bio, &p.Location, &p.Photo, &p.Rotation)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Person{}, ErrNoRecord
+	}
+
+	return p, err
+}
+
+var relationGroups = []struct {
+	kind  string
+	title string
+}{
+	{"parent", "Parents"},
+	{"sibling", "Siblings"},
+	{"half sibling", "Half siblings"},
+	{"spouse", "Spouses"},
+	{"child", "Children"},
+}
+
+const relationsQuery = `
+WITH sibs AS (
+    SELECT pc.child_id AS id,
+           count(*) AS shared,
+           (SELECT count(*) FROM api_parentchild WHERE child_id = pc.child_id) AS their_parents
+    FROM api_parentchild pc
+    WHERE pc.parent_id IN (SELECT parent_id FROM api_parentchild WHERE child_id = $1)
+      AND pc.child_id <> $1
+    GROUP BY pc.child_id
+),
+rel AS (
+        SELECT 'parent' AS kind, parent_id AS id
+        FROM api_parentchild WHERE child_id = $1
+    UNION ALL
+        SELECT 'child', child_id
+        FROM api_parentchild WHERE parent_id = $1
+    UNION ALL
+        SELECT 'spouse', CASE WHEN person_a_id = $1 THEN person_b_id ELSE person_a_id END
+        FROM api_marriage WHERE person_a_id = $1 OR person_b_id = $1
+    UNION ALL
+        SELECT CASE WHEN shared = 1
+                     AND (SELECT count(*) FROM api_parentchild WHERE child_id = $1) >= 2
+                     AND their_parents >= 2
+                    THEN 'half sibling'
+                    ELSE 'sibling'
+               END,
+               id
+        FROM sibs
+)
+SELECT rel.kind,
+       p.id,
+       p.name,
+       COALESCE(p.birthyear, 0),
+       COALESCE(ph.file_path, 'default.jpeg'),
+       COALESCE(ph.rotation, 0)
+FROM rel
+JOIN api_person p ON p.id = rel.id
+LEFT JOIN LATERAL (
+    SELECT file_path, rotation
+    FROM api_photo
+    WHERE person_id = p.id AND profile_pic
+    ORDER BY id
+    LIMIT 1
+) ph ON true
+ORDER BY p.birthyear NULLS LAST, p.name`
+
+func (m *PersonModel) Relations(ctx context.Context, id int) ([]RelationGroup, error) {
+	rows, err := m.DB.Query(ctx, relationsQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	found := map[string][]Relative{}
+
+	for rows.Next() {
+		var kind string
+		var r Relative
+
+		err = rows.Scan(&kind, &r.ID, &r.Name, &r.Birthyear, &r.Photo, &r.Rotation)
+		if err != nil {
+			return nil, err
+		}
+		found[kind] = append(found[kind], r)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	var groups []RelationGroup
+
+	for _, g := range relationGroups {
+		if len(found[g.kind]) > 0 {
+			groups = append(groups, RelationGroup{Title: g.title, People: found[g.kind]})
+		}
+	}
+
+	return groups, nil
 }

@@ -17,8 +17,11 @@ type application struct {
 	logger        *slog.Logger
 	templateCache map[string]*template.Template
 	people        *models.PersonModel
+	users         *models.UserModel
 	mediaURL      string
 	csp           string
+	sessionSecret []byte
+	secureCookies bool
 }
 
 func main() {
@@ -35,6 +38,14 @@ func main() {
 		logger.Error("S3_PUBLIC_URL is not set")
 		os.Exit(1)
 	}
+
+	sessionSecret := os.Getenv("SESSION_SECRET")
+	if len(sessionSecret) < 32 {
+		logger.Error("SESSION_SECRET is not set, or is shorter than 32 characters")
+		os.Exit(1)
+	}
+
+	secureCookies := os.Getenv("SECURE_COOKIES") != "false"
 
 	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
@@ -62,8 +73,11 @@ func main() {
 		logger:        logger,
 		templateCache: templateCache,
 		people:        &models.PersonModel{DB: pool},
+		users:         &models.UserModel{DB: pool},
 		mediaURL:      mediaURL,
 		csp:           buildCSP(mediaURL),
+		sessionSecret: []byte(sessionSecret),
+		secureCookies: secureCookies,
 	}
 
 	srv := &http.Server{

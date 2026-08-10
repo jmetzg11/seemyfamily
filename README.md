@@ -1,7 +1,42 @@
-how to start app 
+# seemyfamily
 
-different make commads 
+[photo]
+[photo]
 
-struct - django admin for content management, go app for traffice 
+## Development
 
-what ports to look on 
+```
+make run     # postgres + minio, migrations, dev fixtures, then both servers
+make down    # stop everything
+```
+
+| | |
+|---|---|
+| app | http://localhost:4000 |
+| admin | http://localhost:8000/admin |
+| minio | http://localhost:9001 — `seemyfamily` / `donkey6donkey6` |
+
+The fixtures ship two accounts:
+
+| username | password | |
+|---|---|---|
+| `admin` | `admin` | superuser, can reach the Django admin |
+| `guest` | `guest` | ordinary app user |
+
+Needs docker, [uv](https://docs.astral.sh/uv/), and [air](https://github.com/air-verse/air).
+
+`make run` is dev-only and loads synthetic fixtures data.
+To wipe the database and object store and start over: `make down`.
+
+## Production
+
+Production is a single Go binary with no Python in it, so migrations to the prod
+database are applied by the Django admin running locally:
+
+```
+make admin-prod    # not built yet
+```
+
+This also gives you a way to curate and view prod content. It is a separate target
+from `run` so that `loaddata` can never execute against real data. It will prompt
+for the database and storage connection strings rather than reading them from a file.

@@ -13,6 +13,13 @@ func (app *application) routes() http.Handler {
 
 	mux.HandleFunc("GET /ping", ping)
 	mux.HandleFunc("GET /{$}", app.home)
+	mux.HandleFunc("GET /person/{id}", app.person)
 
-	return app.recoverPanic(commonHeaders(app.csp)(mux))
+	mux.HandleFunc("GET /login", app.loginForm)
+	mux.HandleFunc("POST /login", app.login)
+	mux.HandleFunc("POST /logout", app.logout)
+
+	csrf := http.NewCrossOriginProtection()
+
+	return app.recoverPanic(commonHeaders(app.csp)(csrf.Handler(app.authenticate(mux))))
 }

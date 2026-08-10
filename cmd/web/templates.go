@@ -11,11 +11,23 @@ import (
 	"seemyfamily.jmetzg11/ui"
 )
 
+type loginForm struct {
+	Name  string
+	Next  string
+	Error string
+}
+
 type templateData struct {
-	Page        string
-	MediaURL    string
-	UserName    string
+	Page            string
+	MediaURL        string
+	UserName        string
+	IsAuthenticated bool
+
+	Form loginForm
+
 	People      []models.Person
+	Person      models.Person
+	Relations   []models.RelationGroup
 	Search      string
 	Sort        string
 	Dir         string

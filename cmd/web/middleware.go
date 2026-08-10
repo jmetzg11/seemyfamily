@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"seemyfamily.jmetzg11/internal/models"
 )
 
 func buildCSP(mediaURL string) string {
@@ -33,6 +37,46 @@ func commonHeaders(csp string) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id, err := app.readSessionCookie(r)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		user, err := app.users.Get(r.Context(), id)
+		if err != nil {
+			if !errors.Is(err, models.ErrNoRecord) {
+				app.serverError(w, r, err)
+				return
+			}
+
+			app.clearSessionCookie(w)
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userContextKey, user)))
+	})
+}
+
+func (app *application) requireAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, ok := userFromContext(r)
+		if !ok {
+			v := url.Values{}
+			v.Set("next", r.URL.RequestURI())
+			http.Redirect(w, r, "/login?"+v.Encode(), http.StatusSeeOther)
+			return
+		}
+
+		w.Header().Set("Cache-Control", "no-store")
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (app *application) recoverPanic(next http.Handler) http.Handler {

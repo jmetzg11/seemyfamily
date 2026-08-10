@@ -1,4 +1,7 @@
 [
+  {"model": "auth.user", "pk": 1, "fields": {"username": "admin", "email": "", "password": "pbkdf2_sha256$1500000$xT0rOS1a20sYdLxorfNVug$IbfYM7jlW/MARo2rYhVAYSMStjGUpPQFCXnapXn2O5o=", "first_name": "", "last_name": "", "is_superuser": true, "is_staff": true, "is_active": true, "last_login": null, "date_joined": "2026-01-01T00:00:00Z", "groups": [], "user_permissions": []}},
+  {"model": "auth.user", "pk": 2, "fields": {"username": "guest", "email": "", "password": "pbkdf2_sha256$1500000$bFB6pZVMgh6Zo7yPv8VvAn$2GrjnMJiy6PKnlJylr53LopAFUmHvhFR3jSkx7rzYM4=", "first_name": "", "last_name": "", "is_superuser": false, "is_staff": false, "is_active": true, "last_login": null, "date_joined": "2026-01-01T00:00:00Z", "groups": [], "user_permissions": []}},
+
   {"model": "api.person", "pk": 1, "fields": {"name": "Mira Vance", "birthyear": 1938, "birthplace": "Lisbon, Portugal", "bio": "Seamstress who ran a small shop off the Rua da Prata for forty years."}},
   {"model": "api.person", "pk": 2, "fields": {"name": "Otto Vance", "birthyear": 1936, "birthplace": "Porto, Portugal", "bio": "Merchant marine, then a dockyard electrician. Kept a logbook of every ship he sailed on, which the family still has. Died in 2011."}},
   {"model": "api.person", "pk": 3, "fields": {"name": "Boris Vance", "birthyear": 1962, "birthplace": "Lisbon, Portugal", "bio": "Structural engineer. Married twice."}},

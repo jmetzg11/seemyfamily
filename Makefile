@@ -1,34 +1,22 @@
-.PHONY: services services-down migrate fixtures superuser admin run down reset
+.PHONY: run down admin-prod
 
-DB ?= dev
-
-services:
+run:
 	docker compose up -d
-	@until docker compose exec -T db pg_isready -U postgres -d seemyfamily; do sleep 1; done
+	@until docker compose exec -T db pg_isready -U postgres -d seemyfamily >/dev/null 2>&1; do sleep 1; done
+	@cd admin && uv run python manage.py migrate
+	@cd admin && uv run python manage.py loaddata dev.json
+	@trap 'pkill -f "[m]anage.py runserver" >/dev/null 2>&1 || true' EXIT; \
+	set -a; . ./.env; set +a; \
+	(cd admin && uv run python manage.py runserver 8000 &); \
+	air
 
-services-down:
-	docker compose down
-
-migrate:
-	cd admin && DB=$(DB) uv run python manage.py migrate
-
-fixtures:
-	cd admin && DB=$(DB) uv run python manage.py loaddata dev.json
-
-superuser:
-	cd admin && DB=$(DB) DJANGO_SUPERUSER_PASSWORD=admin uv run python manage.py createsuperuser --noinput --username admin --email admin@example.com || true
-
-admin:
-	cd admin && DB=$(DB) uv run python manage.py runserver 8000
-
-run: services migrate fixtures superuser
-	cd admin && uv run python manage.py runserver 8000 &
-	set -a; . ./.env; set +a; air
+admin-prod:
+	@echo "TODO: prompt for the prod database and storage connection strings,"
+	@echo "then run migrate and the Django admin against prod. Never loaddata."
+	@exit 1
 
 down:
-	@pkill -f 'tmp/web' || true
-	@pkill -f 'manage.py runserver' || true
-	@fuser -k 4000/tcp 2>/dev/null || true
-
-reset: down
-	docker compose down -v
+	@pkill -f '[t]mp/web' 2>/dev/null || true
+	@pkill -f '[m]anage.py runserver' 2>/dev/null || true
+	@docker compose down -v 
+	

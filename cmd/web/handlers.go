@@ -1,8 +1,12 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"seemyfamily.jmetzg11/internal/models"
 )
 
 const rowsPerPage = 20
@@ -62,4 +66,88 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	data.Total = total
 
 	app.render(w, r, http.StatusOK, "home.html", data)
+}
+
+func safeNext(next string) string {
+	if !strings.HasPrefix(next, "/") || strings.HasPrefix(next, "//") || strings.HasPrefix(next, "/\\") {
+		return "/"
+	}
+	return next
+}
+
+func (app *application) loginForm(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	data.Page = "login"
+	data.Form.Next = safeNext(r.URL.Query().Get("next"))
+
+	app.render(w, r, http.StatusOK, "login.html", data)
+}
+
+func (app *application) login(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	name := strings.TrimSpace(r.PostForm.Get("name"))
+	next := safeNext(r.PostForm.Get("next"))
+
+	user, err := app.users.Authenticate(r.Context(), name, r.PostForm.Get("password"))
+	if err != nil {
+		if !errors.Is(err, models.ErrInvalidCredentials) {
+			app.serverError(w, r, err)
+			return
+		}
+
+		data := app.newTemplateData(r)
+		data.Page = "login"
+		data.Form.Next = next
+		data.Form.Name = name
+		data.Form.Error = "Username or password is incorrect."
+
+		app.render(w, r, http.StatusUnprocessableEntity, "login.html", data)
+		return
+	}
+
+	app.setSessionCookie(w, user.ID)
+
+	http.Redirect(w, r, next, http.StatusSeeOther)
+}
+
+func (app *application) logout(w http.ResponseWriter, r *http.Request) {
+	app.clearSessionCookie(w)
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) person(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	person, err := app.people.Get(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	relations, err := app.people.Relations(r.Context(), id)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Page = "person"
+	data.Person = person
+	data.Relations = relations
+
+	app.render(w, r, http.StatusOK, "person.html", data)
 }

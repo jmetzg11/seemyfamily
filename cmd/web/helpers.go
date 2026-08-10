@@ -11,14 +11,26 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
+func (app *application) clientError(w http.ResponseWriter, status int) {
+	http.Error(w, http.StatusText(status), status)
+}
+
 func (app *application) notFound(w http.ResponseWriter) {
-	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	app.clientError(w, http.StatusNotFound)
 }
 
 func (app *application) newTemplateData(r *http.Request) templateData {
-	return templateData{
+	data := templateData{
 		MediaURL: app.mediaURL,
 	}
+
+	user, ok := userFromContext(r)
+	if ok {
+		data.UserName = user.Name
+		data.IsAuthenticated = true
+	}
+
+	return data
 }
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data any) {
