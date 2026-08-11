@@ -32,6 +32,11 @@ type RelationGroup struct {
 	People []Summary
 }
 
+type Fact struct {
+	Relation string
+	Person   Summary
+}
+
 type PersonModel struct {
 	DB *pgxpool.Pool
 }
@@ -373,6 +378,192 @@ func (m *PersonModel) AddRelative(ctx context.Context, p Person, relativeID int,
 	}
 
 	return tx.Commit(ctx)
+}
+
+const factsQuery = `
+SELECT rel.kind,
+       p.id,
+       p.name,
+       COALESCE(p.birthyear, 0),
+       COALESCE(ph.file_path, 'default.jpeg'),
+       COALESCE(ph.rotation, 0)
+FROM (
+        SELECT 'parent' AS kind, parent_id AS id
+        FROM api_parentchild WHERE child_id = $1
+    UNION ALL
+        SELECT 'child', child_id
+        FROM api_parentchild WHERE parent_id = $1
+    UNION ALL
+        SELECT 'spouse', CASE WHEN person_a_id = $1 THEN person_b_id ELSE person_a_id END
+        FROM api_marriage WHERE person_a_id = $1 OR person_b_id = $1
+) rel
+JOIN api_person p ON p.id = rel.id
+LEFT JOIN LATERAL (
+    SELECT file_path, rotation
+    FROM api_photo
+    WHERE person_id = p.id AND profile_pic
+    ORDER BY id
+    LIMIT 1
+) ph ON true
+ORDER BY p.birthyear NULLS LAST, p.name`
+
+func (m *PersonModel) Facts(ctx context.Context, id int) ([]Fact, error) {
+	rows, err := m.DB.Query(ctx, factsQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var facts []Fact
+
+	for rows.Next() {
+		var f Fact
+
+		err = rows.Scan(&f.Relation, &f.Person.ID, &f.Person.Name,
+			&f.Person.Birthyear, &f.Person.Photo, &f.Person.Rotation)
+		if err != nil {
+			return nil, err
+		}
+		facts = append(facts, f)
+	}
+
+	return facts, rows.Err()
+}
+
+const namesQuery = `SELECT name FROM api_person WHERE id <> $1 ORDER BY name`
+
+func (m *PersonModel) Names(ctx context.Context, exclude int) ([]string, error) {
+	rows, err := m.DB.Query(ctx, namesQuery, exclude)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var names []string
+
+	for rows.Next() {
+		var name string
+
+		err = rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		names = append(names, name)
+	}
+
+	return names, rows.Err()
+}
+
+const idByNameQuery = `SELECT id FROM api_person WHERE name = $1`
+
+const nameByIDQuery = `SELECT name FROM api_person WHERE id = $1`
+
+const deleteParentChildQuery = `
+DELETE FROM api_parentchild WHERE parent_id = $1 AND child_id = $2`
+
+const deleteMarriageQuery = `
+DELETE FROM api_marriage
+WHERE person_a_id = LEAST($1, $2) AND person_b_id = GREATEST($1, $2)`
+
+func (m *PersonModel) Link(ctx context.Context, id int, name, relation, username string) error {
+	return m.relate(ctx, id, name, relation, username, true)
+}
+
+func (m *PersonModel) Unlink(ctx context.Context, id int, name, relation, username string) error {
+	return m.relate(ctx, id, name, relation, username, false)
+}
+
+func (m *PersonModel) relate(ctx context.Context, id int, name, relation, username string, link bool) error {
+	tx, err := m.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	var otherID int
+
+	err = tx.QueryRow(ctx, idByNameQuery, name).Scan(&otherID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrNoRecord
+	}
+	if err != nil {
+		return err
+	}
+	if otherID == id {
+		return ErrSelfLink
+	}
+
+	verb := "removed"
+
+	if link {
+		verb = "added"
+		err = insertFact(ctx, tx, id, otherID, relation)
+	} else {
+		err = deleteFact(ctx, tx, id, otherID, relation)
+	}
+	if err != nil {
+		return err
+	}
+
+	var subject string
+
+	err = tx.QueryRow(ctx, nameByIDQuery, id).Scan(&subject)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, historyQuery, username, verb+" "+relation, subject)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func insertFact(ctx context.Context, tx pgx.Tx, id, otherID int, relation string) error {
+	var err error
+
+	switch relation {
+	case "parent":
+		_, err = tx.Exec(ctx, insertParentChildQuery, otherID, id)
+	case "child":
+		_, err = tx.Exec(ctx, insertParentChildQuery, id, otherID)
+	case "spouse":
+		_, err = tx.Exec(ctx, insertMarriageQuery, id, otherID)
+	default:
+		return fmt.Errorf("models: unknown relation %q", relation)
+	}
+
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == uniqueViolation {
+		return ErrAlreadyLinked
+	}
+
+	return err
+}
+
+func deleteFact(ctx context.Context, tx pgx.Tx, id, otherID int, relation string) error {
+	var tag pgconn.CommandTag
+	var err error
+
+	switch relation {
+	case "parent":
+		tag, err = tx.Exec(ctx, deleteParentChildQuery, otherID, id)
+	case "child":
+		tag, err = tx.Exec(ctx, deleteParentChildQuery, id, otherID)
+	case "spouse":
+		tag, err = tx.Exec(ctx, deleteMarriageQuery, id, otherID)
+	default:
+		return fmt.Errorf("models: unknown relation %q", relation)
+	}
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNoRecord
+	}
+
+	return nil
 }
 
 var deleteDependentQueries = []string{

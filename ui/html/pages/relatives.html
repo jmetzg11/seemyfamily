@@ -1,0 +1,59 @@
+{{define "title"}}Relatives of {{.Person.Name}}{{end}}
+
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/form.css" />
+<link rel="stylesheet" href="/static/css/relatives.css" />
+{{end}}
+
+{{define "main"}}
+<div class="record">
+    <h1>Relatives of {{.Person.Name}}</h1>
+
+    <p class="warning">Only parents, children and spouses are stored. Siblings,
+    grandparents and cousins are worked out from these.</p>
+
+    {{if .Facts}}
+    <ul class="links">
+        {{range .Facts}}
+        <li>
+            <span class="link-kind">{{.Relation}}</span>
+            <a href="/person/{{.Person.ID}}">{{.Person.Name}}</a>
+            {{if .Person.Birthyear}}<span class="link-year">{{.Person.Birthyear}}</span>{{end}}
+            <form method="POST" action="/person/{{$.Person.ID}}/relatives/unlink">
+                <input type="hidden" name="name" value="{{.Person.Name}}" />
+                <input type="hidden" name="relation" value="{{.Relation}}" />
+                <button class="danger" type="submit">Unlink</button>
+            </form>
+        </li>
+        {{end}}
+    </ul>
+    {{else}}
+    <p class="empty">Nothing recorded yet.</p>
+    {{end}}
+
+    <form method="POST" action="/person/{{.Person.ID}}/relatives/link">
+        <h2>Link someone who is already on the site</h2>
+
+        {{with .LinkForm.Error}}<p class="field-error">{{.}}</p>{{end}}
+
+        <label for="relation">Is {{.Person.Name}}'s</label>
+        <select id="relation" name="relation" required>
+            <option value="">Choose one</option>
+            <option value="parent" {{if eq .LinkForm.Relation "parent"}}selected{{end}}>Parent</option>
+            <option value="spouse" {{if eq .LinkForm.Relation "spouse"}}selected{{end}}>Spouse</option>
+            <option value="child" {{if eq .LinkForm.Relation "child"}}selected{{end}}>Child</option>
+        </select>
+
+        <label for="name">Person</label>
+        <input id="name" name="name" list="people" value="{{.LinkForm.Name}}" autocomplete="off" required />
+        <datalist id="people">
+            {{range .Names}}<option value="{{.}}"></option>{{end}}
+        </datalist>
+
+        <div class="form-actions">
+            <button type="submit">Link</button>
+            <a href="/person/{{.Person.ID}}">Back to profile</a>
+        </div>
+    </form>
+</div>
+{{end}}

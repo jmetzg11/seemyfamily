@@ -83,6 +83,14 @@ type relativeForm struct {
 
 var relations = []string{"parent", "sibling", "spouse", "child"}
 
+var facts = []string{"parent", "spouse", "child"}
+
+type linkForm struct {
+	Name     string
+	Relation string
+	Error    string
+}
+
 func relativeFormFrom(r *http.Request) relativeForm {
 	return relativeForm{
 		Person:   personFormFrom(r),
