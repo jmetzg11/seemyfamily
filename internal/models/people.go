@@ -282,6 +282,140 @@ func (m *PersonModel) Update(ctx context.Context, p Person, username string) err
 	return tx.Commit(ctx)
 }
 
+const insertPersonQuery = `
+INSERT INTO api_person (name, birthyear, birthplace, bio)
+VALUES ($1, NULLIF($2::int, 0), NULLIF($3, ''), NULLIF($4, ''))
+RETURNING id`
+
+const insertParentChildQuery = `
+INSERT INTO api_parentchild (parent_id, child_id)
+VALUES ($1, $2)`
+
+const insertMarriageQuery = `
+INSERT INTO api_marriage (person_a_id, person_b_id)
+VALUES (LEAST($1, $2), GREATEST($1, $2))`
+
+const copyParentsQuery = `
+INSERT INTO api_parentchild (parent_id, child_id)
+SELECT parent_id, $2
+FROM api_parentchild
+WHERE child_id = $1`
+
+const insertUnknownParentQuery = `
+INSERT INTO api_person (name)
+SELECT left('Unknown parent of ' || name, 255)
+FROM api_person
+WHERE id = $1
+RETURNING id`
+
+func linkUnknownParent(ctx context.Context, tx pgx.Tx, siblings ...int) error {
+	var parentID int
+
+	err := tx.QueryRow(ctx, insertUnknownParentQuery, siblings[0]).Scan(&parentID)
+	if err != nil {
+		return err
+	}
+
+	for _, child := range siblings {
+		_, err = tx.Exec(ctx, insertParentChildQuery, parentID, child)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PersonModel) AddRelative(ctx context.Context, p Person, relativeID int, relation, username string) error {
+	tx, err := m.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	var id int
+
+	err = tx.QueryRow(ctx, insertPersonQuery, p.Name, p.Birthyear, p.Birthplace, p.Bio).Scan(&id)
+	if err != nil {
+		return asDuplicateName(err)
+	}
+
+	if p.Location != "" {
+		_, err = tx.Exec(ctx, upsertLocationQuery, id, p.Location, p.Lat, p.Lng)
+		if err != nil {
+			return err
+		}
+	}
+
+	switch relation {
+	case "parent":
+		_, err = tx.Exec(ctx, insertParentChildQuery, id, relativeID)
+	case "child":
+		_, err = tx.Exec(ctx, insertParentChildQuery, relativeID, id)
+	case "spouse":
+		_, err = tx.Exec(ctx, insertMarriageQuery, relativeID, id)
+	case "sibling":
+		var tag pgconn.CommandTag
+		tag, err = tx.Exec(ctx, copyParentsQuery, relativeID, id)
+		if err == nil && tag.RowsAffected() == 0 {
+			err = linkUnknownParent(ctx, tx, relativeID, id)
+		}
+	default:
+		return fmt.Errorf("models: unknown relation %q", relation)
+	}
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, historyQuery, username, "created", p.Name)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+var deleteDependentQueries = []string{
+	`DELETE FROM api_parentchild WHERE parent_id = $1 OR child_id = $1`,
+	`DELETE FROM api_marriage WHERE person_a_id = $1 OR person_b_id = $1`,
+	`DELETE FROM api_location WHERE person_id = $1`,
+	`DELETE FROM api_photo WHERE person_id = $1`,
+}
+
+const deletePersonQuery = `DELETE FROM api_person WHERE id = $1 RETURNING name`
+
+func (m *PersonModel) Delete(ctx context.Context, id int, username string) error {
+	tx, err := m.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	for _, query := range deleteDependentQueries {
+		_, err = tx.Exec(ctx, query, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	var name string
+
+	err = tx.QueryRow(ctx, deletePersonQuery, id).Scan(&name)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrNoRecord
+	}
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, historyQuery, username, "deleted profile", name)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
 const uniqueViolation = "23505"
 
 func asDuplicateName(err error) error {

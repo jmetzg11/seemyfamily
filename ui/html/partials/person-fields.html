@@ -1,0 +1,33 @@
+{{define "person-fields"}}
+<label for="name">Name</label>
+{{with .Errors.Name}}<p class="field-error">{{.}}</p>{{end}}
+<input id="name" name="name" value="{{.Name}}" maxlength="255" autofocus required />
+
+<label for="birthyear">Birth year</label>
+{{with .Errors.Birthyear}}<p class="field-error">{{.}}</p>{{end}}
+<input id="birthyear" name="birthyear" type="number" value="{{.Birthyear}}" min="1" step="1" />
+
+<label for="birthplace">Birthplace</label>
+{{with .Errors.Birthplace}}<p class="field-error">{{.}}</p>{{end}}
+<input id="birthplace" name="birthplace" value="{{.Birthplace}}" maxlength="255" />
+
+<label for="bio">Bio</label>
+<textarea id="bio" name="bio" rows="6">{{.Bio}}</textarea>
+
+<label for="location">Lives in</label>
+{{with .Errors.Location}}<p class="field-error">{{.}}</p>{{end}}
+<input id="location" name="location" value="{{.Location}}" maxlength="255" />
+
+<div class="field-pair">
+    <div>
+        <label for="lat">Latitude</label>
+        {{with .Errors.Lat}}<p class="field-error">{{.}}</p>{{end}}
+        <input id="lat" name="lat" type="number" value="{{.Lat}}" step="any" />
+    </div>
+    <div>
+        <label for="lng">Longitude</label>
+        {{with .Errors.Lng}}<p class="field-error">{{.}}</p>{{end}}
+        <input id="lng" name="lng" type="number" value="{{.Lng}}" step="any" />
+    </div>
+</div>
+{{end}}

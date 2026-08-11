@@ -1,0 +1,30 @@
+{{define "title"}}Add a relative for {{.Person.Name}}{{end}}
+
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/form.css" />
+{{end}}
+
+{{define "main"}}
+<form class="record" method="POST" action="/person/{{.Person.ID}}/add">
+    <h1>Add a relative for {{.Person.Name}}</h1>
+
+    {{with .RelativeForm}}
+    <label for="relation">Is {{$.Person.Name}}'s</label>
+    {{with .Person.Errors.Relation}}<p class="field-error">{{.}}</p>{{end}}
+    <select id="relation" name="relation" required>
+        <option value="">Choose one</option>
+        <option value="parent" {{if eq .Relation "parent"}}selected{{end}}>Parent</option>
+        <option value="sibling" {{if eq .Relation "sibling"}}selected{{end}}>Sibling</option>
+        <option value="spouse" {{if eq .Relation "spouse"}}selected{{end}}>Spouse</option>
+        <option value="child" {{if eq .Relation "child"}}selected{{end}}>Child</option>
+    </select>
+
+    {{template "person-fields" .Person}}
+    {{end}}
+
+    <div class="form-actions">
+        <button type="submit">Save</button>
+        <a href="/person/{{.Person.ID}}">Cancel</a>
+    </div>
+</form>
+{{end}}

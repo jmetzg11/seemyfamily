@@ -21,6 +21,10 @@ func (app *application) routes() http.Handler {
 
 	mux.Handle("GET /person/{id}/edit", app.requireAuth(http.HandlerFunc(app.editForm)))
 	mux.Handle("POST /person/{id}/edit", app.requireAuth(http.HandlerFunc(app.edit)))
+	mux.Handle("GET /person/{id}/add", app.requireAuth(http.HandlerFunc(app.addRelativeForm)))
+	mux.Handle("POST /person/{id}/add", app.requireAuth(http.HandlerFunc(app.addRelative)))
+	mux.Handle("GET /person/{id}/delete", app.requireAuth(http.HandlerFunc(app.deleteForm)))
+	mux.Handle("POST /person/{id}/delete", app.requireAuth(http.HandlerFunc(app.delete)))
 
 	mux.Handle("GET /info", app.requireAuth(http.HandlerFunc(app.info)))
 

@@ -56,11 +56,32 @@
     font-size: 0.85rem;
 }
 
+.warning {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+}
+
+.losing {
+    margin: 0 0 1rem;
+    padding-left: 1.25rem;
+    font-size: 0.9rem;
+}
+
 .form-actions {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-top: 0.5rem;
+}
+
+.form-actions .danger {
+    border-color: #842029;
+    color: #842029;
+}
+
+.form-actions a.danger {
+    margin-left: auto;
+    font-size: 0.85rem;
 }
 
 .form-actions button {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -73,6 +74,31 @@ func (f *personForm) coordinate(value, field string, limit float64) *float64 {
 	}
 
 	return &n
+}
+
+type relativeForm struct {
+	Person   personForm
+	Relation string
+}
+
+var relations = []string{"parent", "sibling", "spouse", "child"}
+
+func relativeFormFrom(r *http.Request) relativeForm {
+	return relativeForm{
+		Person:   personFormFrom(r),
+		Relation: r.PostForm.Get("relation"),
+	}
+}
+
+func (f *relativeForm) validate() (models.Person, bool) {
+	p, ok := f.Person.validate()
+
+	if !slices.Contains(relations, f.Relation) {
+		f.Person.Errors["Relation"] = "Choose how this person is related."
+		ok = false
+	}
+
+	return p, ok
 }
 
 func (f *personForm) validate() (models.Person, bool) {

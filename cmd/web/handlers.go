@@ -217,6 +217,134 @@ func (app *application) editForm(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, http.StatusOK, "edit.html", data)
 }
 
+func (app *application) deleteForm(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	person, err := app.people.Get(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	relations, err := app.people.Relations(r.Context(), id)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Page = "person"
+	data.Person = person
+	data.Relations = relations
+
+	app.render(w, r, http.StatusOK, "delete.html", data)
+}
+
+func (app *application) delete(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	user, _ := userFromContext(r)
+
+	err = app.people.Delete(r.Context(), id, user.Name)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) addRelativeForm(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	person, err := app.people.Get(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Page = "person"
+	data.Person = person
+
+	app.render(w, r, http.StatusOK, "add.html", data)
+}
+
+func (app *application) addRelative(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	person, err := app.people.Get(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	user, _ := userFromContext(r)
+
+	form := relativeFormFrom(r)
+
+	relative, ok := form.validate()
+
+	if ok {
+		err = app.people.AddRelative(r.Context(), relative, id, form.Relation, user.Name)
+		switch {
+		case err == nil:
+			http.Redirect(w, r, "/person/"+strconv.Itoa(id), http.StatusSeeOther)
+			return
+		case errors.Is(err, models.ErrDuplicateName):
+			form.Person.Errors["Name"] = "Someone with that name already exists."
+		default:
+			app.serverError(w, r, err)
+			return
+		}
+	}
+
+	data := app.newTemplateData(r)
+	data.Page = "person"
+	data.Person = person
+	data.RelativeForm = form
+
+	app.render(w, r, http.StatusUnprocessableEntity, "add.html", data)
+}
+
 func (app *application) edit(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {

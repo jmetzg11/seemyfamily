@@ -17,8 +17,9 @@ type templateData struct {
 	UserName        string
 	IsAuthenticated bool
 
-	LoginForm  loginForm
-	PersonForm personForm
+	LoginForm    loginForm
+	PersonForm   personForm
+	RelativeForm relativeForm
 
 	Edits []models.Edit
 	Chart chart
@@ -100,6 +101,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		name := filepath.Base(page)
 		patterns := []string{
 			"html/base.html",
+			"html/partials/*.html",
 			page,
 		}
 

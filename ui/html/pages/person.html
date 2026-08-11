@@ -15,7 +15,10 @@
             {{if .Person.Location}}<dt>Lives in</dt><dd>{{.Person.Location}}</dd>{{end}}
         </dl>
         {{if .IsAuthenticated}}
-        <p class="profile-actions"><a href="/person/{{.Person.ID}}/edit">Edit details</a></p>
+        <p class="profile-actions">
+            <a href="/person/{{.Person.ID}}/edit">Edit details</a>
+            <a href="/person/{{.Person.ID}}/add">Add a relative</a>
+        </p>
         {{end}}
     </div>
 </header>
