@@ -6,21 +6,11 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Person struct {
-	ID         int
-	Name       string
-	Birthyear  int
-	Birthplace string
-	Bio        string
-	Location   string
-	Photo      string
-	Rotation   int
-}
-
-type Relative struct {
+type Summary struct {
 	ID        int
 	Name      string
 	Birthyear int
@@ -28,9 +18,18 @@ type Relative struct {
 	Rotation  int
 }
 
+type Person struct {
+	Summary
+	Birthplace string
+	Bio        string
+	Location   string
+	Lat        *float64
+	Lng        *float64
+}
+
 type RelationGroup struct {
 	Title  string
-	People []Relative
+	People []Summary
 }
 
 type PersonModel struct {
@@ -110,6 +109,8 @@ SELECT p.id,
        COALESCE(p.birthplace, ''),
        COALESCE(p.bio, ''),
        COALESCE(l.name, ''),
+       l.lat,
+       l.lng,
        COALESCE(ph.file_path, 'default.jpeg'),
        COALESCE(ph.rotation, 0)
 FROM api_person p
@@ -127,7 +128,8 @@ func (m *PersonModel) Get(ctx context.Context, id int) (Person, error) {
 	var p Person
 
 	err := m.DB.QueryRow(ctx, getQuery, id).Scan(
-		&p.ID, &p.Name, &p.Birthyear, &p.Birthplace, &p.Bio, &p.Location, &p.Photo, &p.Rotation)
+		&p.ID, &p.Name, &p.Birthyear, &p.Birthplace, &p.Bio,
+		&p.Location, &p.Lat, &p.Lng, &p.Photo, &p.Rotation)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Person{}, ErrNoRecord
 	}
@@ -199,11 +201,11 @@ func (m *PersonModel) Relations(ctx context.Context, id int) ([]RelationGroup, e
 	}
 	defer rows.Close()
 
-	found := map[string][]Relative{}
+	found := map[string][]Summary{}
 
 	for rows.Next() {
 		var kind string
-		var r Relative
+		var r Summary
 
 		err = rows.Scan(&kind, &r.ID, &r.Name, &r.Birthyear, &r.Photo, &r.Rotation)
 		if err != nil {
@@ -226,4 +228,66 @@ func (m *PersonModel) Relations(ctx context.Context, id int) ([]RelationGroup, e
 	}
 
 	return groups, nil
+}
+
+const updateQuery = `
+UPDATE api_person
+SET name = $2,
+    birthyear = NULLIF($3::int, 0),
+    birthplace = NULLIF($4, ''),
+    bio = NULLIF($5, '')
+WHERE id = $1`
+
+const upsertLocationQuery = `
+INSERT INTO api_location (person_id, name, lat, lng)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (person_id) DO UPDATE
+SET name = EXCLUDED.name, lat = EXCLUDED.lat, lng = EXCLUDED.lng`
+
+const deleteLocationQuery = `DELETE FROM api_location WHERE person_id = $1`
+
+const historyQuery = `
+INSERT INTO api_history (created_at, username, action, recipient)
+VALUES (now(), $1, $2, $3)`
+
+func (m *PersonModel) Update(ctx context.Context, p Person, username string) error {
+	tx, err := m.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	tag, err := tx.Exec(ctx, updateQuery, p.ID, p.Name, p.Birthyear, p.Birthplace, p.Bio)
+	if err != nil {
+		return asDuplicateName(err)
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNoRecord
+	}
+
+	if p.Location == "" {
+		_, err = tx.Exec(ctx, deleteLocationQuery, p.ID)
+	} else {
+		_, err = tx.Exec(ctx, upsertLocationQuery, p.ID, p.Location, p.Lat, p.Lng)
+	}
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, historyQuery, username, "updated details", p.Name)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+const uniqueViolation = "23505"
+
+func asDuplicateName(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == uniqueViolation {
+		return ErrDuplicateName
+	}
+	return err
 }

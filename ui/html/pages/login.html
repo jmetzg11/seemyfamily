@@ -8,12 +8,12 @@
 <form class="login" method="POST" action="/login">
     <h1>Sign in</h1>
 
-    {{if .Form.Error}}<p class="form-error">{{.Form.Error}}</p>{{end}}
+    {{if .LoginForm.Error}}<p class="form-error">{{.LoginForm.Error}}</p>{{end}}
 
-    <input type="hidden" name="next" value="{{.Form.Next}}" />
+    <input type="hidden" name="next" value="{{.LoginForm.Next}}" />
 
     <label for="name">Username</label>
-    <input id="name" name="name" value="{{.Form.Name}}" autocomplete="username" autofocus required />
+    <input id="name" name="name" value="{{.LoginForm.Name}}" autocomplete="username" autofocus required />
 
     <label for="password">Password</label>
     <input id="password" name="password" type="password" autocomplete="current-password" required />

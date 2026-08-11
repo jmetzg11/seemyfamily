@@ -11,19 +11,14 @@ import (
 	"seemyfamily.jmetzg11/ui"
 )
 
-type loginForm struct {
-	Name  string
-	Next  string
-	Error string
-}
-
 type templateData struct {
 	Page            string
 	MediaURL        string
 	UserName        string
 	IsAuthenticated bool
 
-	Form loginForm
+	LoginForm  loginForm
+	PersonForm personForm
 
 	Edits []models.Edit
 	Chart chart

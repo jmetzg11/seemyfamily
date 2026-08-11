@@ -78,7 +78,7 @@ func safeNext(next string) string {
 func (app *application) loginForm(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Page = "login"
-	data.Form.Next = safeNext(r.URL.Query().Get("next"))
+	data.LoginForm.Next = safeNext(r.URL.Query().Get("next"))
 
 	app.render(w, r, http.StatusOK, "login.html", data)
 }
@@ -102,9 +102,9 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 
 		data := app.newTemplateData(r)
 		data.Page = "login"
-		data.Form.Next = next
-		data.Form.Name = name
-		data.Form.Error = "Username or password is incorrect."
+		data.LoginForm.Next = next
+		data.LoginForm.Name = name
+		data.LoginForm.Error = "Username or password is incorrect."
 
 		app.render(w, r, http.StatusUnprocessableEntity, "login.html", data)
 		return
@@ -190,4 +190,74 @@ func (app *application) person(w http.ResponseWriter, r *http.Request) {
 	data.Relations = relations
 
 	app.render(w, r, http.StatusOK, "person.html", data)
+}
+
+func (app *application) editForm(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	person, err := app.people.Get(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Page = "person"
+	data.Person = person
+	data.PersonForm = newPersonForm(person)
+
+	app.render(w, r, http.StatusOK, "edit.html", data)
+}
+
+func (app *application) edit(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	user, _ := userFromContext(r)
+
+	form := personFormFrom(r)
+
+	person, ok := form.validate()
+	person.ID = id
+
+	if ok {
+		err = app.people.Update(r.Context(), person, user.Name)
+		switch {
+		case err == nil:
+			http.Redirect(w, r, "/person/"+strconv.Itoa(id), http.StatusSeeOther)
+			return
+		case errors.Is(err, models.ErrNoRecord):
+			app.notFound(w)
+			return
+		case errors.Is(err, models.ErrDuplicateName):
+			form.Errors["Name"] = "Someone with that name already exists."
+		default:
+			app.serverError(w, r, err)
+			return
+		}
+	}
+
+	data := app.newTemplateData(r)
+	data.Page = "person"
+	data.Person = person
+	data.PersonForm = form
+
+	app.render(w, r, http.StatusUnprocessableEntity, "edit.html", data)
 }

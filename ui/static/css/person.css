@@ -34,6 +34,11 @@
     margin: 0;
 }
 
+.profile-actions {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+}
+
 .bio {
     max-width: 60ch;
     margin-bottom: 2rem;

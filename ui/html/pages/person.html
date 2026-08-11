@@ -14,6 +14,9 @@
             {{if .Person.Birthplace}}<dt>Birthplace</dt><dd>{{.Person.Birthplace}}</dd>{{end}}
             {{if .Person.Location}}<dt>Lives in</dt><dd>{{.Person.Location}}</dd>{{end}}
         </dl>
+        {{if .IsAuthenticated}}
+        <p class="profile-actions"><a href="/person/{{.Person.ID}}/edit">Edit details</a></p>
+        {{end}}
     </div>
 </header>
 

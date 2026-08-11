@@ -19,6 +19,9 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("POST /login", app.login)
 	mux.HandleFunc("POST /logout", app.logout)
 
+	mux.Handle("GET /person/{id}/edit", app.requireAuth(http.HandlerFunc(app.editForm)))
+	mux.Handle("POST /person/{id}/edit", app.requireAuth(http.HandlerFunc(app.edit)))
+
 	mux.Handle("GET /info", app.requireAuth(http.HandlerFunc(app.info)))
 
 	csrf := http.NewCrossOriginProtection()
