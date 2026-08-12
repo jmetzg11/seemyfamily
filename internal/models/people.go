@@ -298,7 +298,7 @@ VALUES ($1, $2)`
 
 const insertMarriageQuery = `
 INSERT INTO api_marriage (person_a_id, person_b_id)
-VALUES (LEAST($1, $2), GREATEST($1, $2))`
+VALUES (LEAST($1::bigint, $2::bigint), GREATEST($1::bigint, $2::bigint))`
 
 const copyParentsQuery = `
 INSERT INTO api_parentchild (parent_id, child_id)
@@ -463,7 +463,8 @@ DELETE FROM api_parentchild WHERE parent_id = $1 AND child_id = $2`
 
 const deleteMarriageQuery = `
 DELETE FROM api_marriage
-WHERE person_a_id = LEAST($1, $2) AND person_b_id = GREATEST($1, $2)`
+WHERE person_a_id = LEAST($1::bigint, $2::bigint)
+  AND person_b_id = GREATEST($1::bigint, $2::bigint)`
 
 func (m *PersonModel) Link(ctx context.Context, id int, name, relation, username string) error {
 	return m.relate(ctx, id, name, relation, username, true)
