@@ -11,6 +11,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"seemyfamily.jmetzg11/internal/models"
+	"seemyfamily.jmetzg11/internal/storage"
 )
 
 type application struct {
@@ -19,7 +20,7 @@ type application struct {
 	people        *models.PersonModel
 	users         *models.UserModel
 	stats         *models.InfoModel
-	mediaURL      string
+	photos        *storage.Client
 	csp           string
 	sessionSecret []byte
 	secureCookies bool
@@ -28,16 +29,15 @@ type application struct {
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		logger.Error("DATABASE_URL is not set")
-		os.Exit(1)
-	}
+	dsn := mustGetenv(logger, "DATABASE_URL")
 
-	mediaURL := strings.TrimSuffix(os.Getenv("S3_PUBLIC_URL"), "/")
-	if mediaURL == "" {
-		logger.Error("S3_PUBLIC_URL is not set")
-		os.Exit(1)
+	photos := &storage.Client{
+		Endpoint:  strings.TrimSuffix(mustGetenv(logger, "S3_ENDPOINT"), "/"),
+		PublicURL: strings.TrimSuffix(mustGetenv(logger, "S3_PUBLIC_URL"), "/"),
+		Region:    mustGetenv(logger, "S3_REGION"),
+		Bucket:    mustGetenv(logger, "S3_BUCKET"),
+		AccessKey: mustGetenv(logger, "S3_ACCESS_KEY"),
+		SecretKey: mustGetenv(logger, "S3_SECRET_KEY"),
 	}
 
 	sessionSecret := os.Getenv("SESSION_SECRET")
@@ -76,8 +76,8 @@ func main() {
 		people:        &models.PersonModel{DB: pool},
 		users:         &models.UserModel{DB: pool},
 		stats:         &models.InfoModel{DB: pool},
-		mediaURL:      mediaURL,
-		csp:           buildCSP(mediaURL),
+		photos:        photos,
+		csp:           buildCSP(photos.PublicURL),
 		sessionSecret: []byte(sessionSecret),
 		secureCookies: secureCookies,
 	}

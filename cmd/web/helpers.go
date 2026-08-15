@@ -3,8 +3,20 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 )
+
+func mustGetenv(logger *slog.Logger, key string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		logger.Error(key + " is not set")
+		os.Exit(1)
+	}
+
+	return value
+}
 
 func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
 	app.logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
@@ -21,7 +33,7 @@ func (app *application) notFound(w http.ResponseWriter) {
 
 func (app *application) newTemplateData(r *http.Request) templateData {
 	data := templateData{
-		MediaURL: app.mediaURL,
+		MediaURL: app.photos.PublicURL,
 	}
 
 	user, ok := userFromContext(r)
