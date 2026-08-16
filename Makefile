@@ -1,4 +1,9 @@
-.PHONY: run down admin-prod
+.PHONY: run down admin-prod hooks
+
+hooks:
+	@chmod +x .githooks/*
+	@git config core.hooksPath .githooks
+	@echo "pre-commit hook installed"
 
 run:
 	docker compose up -d

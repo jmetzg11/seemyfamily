@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"io/fs"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -14,7 +12,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"seemyfamily.jmetzg11/internal/models"
 	"seemyfamily.jmetzg11/internal/storage"
-	"seemyfamily.jmetzg11/ui"
 )
 
 const testUser = "go-test-uploader"
@@ -38,19 +35,25 @@ func newTestApp(t *testing.T) *application {
 		t.Fatal(err)
 	}
 
+	bucket := &storage.Client{
+		Endpoint:  strings.TrimSuffix(os.Getenv("S3_ENDPOINT"), "/"),
+		PublicURL: strings.TrimSuffix(os.Getenv("S3_PUBLIC_URL"), "/"),
+		Region:    os.Getenv("S3_REGION"),
+		Bucket:    os.Getenv("S3_BUCKET"),
+		AccessKey: os.Getenv("S3_ACCESS_KEY"),
+		SecretKey: os.Getenv("S3_SECRET_KEY"),
+	}
+
 	return &application{
 		logger:        slog.New(slog.DiscardHandler),
 		templateCache: templateCache,
 		people:        &models.PersonModel{DB: pool},
+		users:         &models.UserModel{DB: pool},
+		stats:         &models.InfoModel{DB: pool},
 		photos:        &models.PhotoModel{DB: pool},
-		bucket: &storage.Client{
-			Endpoint:  strings.TrimSuffix(os.Getenv("S3_ENDPOINT"), "/"),
-			PublicURL: strings.TrimSuffix(os.Getenv("S3_PUBLIC_URL"), "/"),
-			Region:    os.Getenv("S3_REGION"),
-			Bucket:    os.Getenv("S3_BUCKET"),
-			AccessKey: os.Getenv("S3_ACCESS_KEY"),
-			SecretKey: os.Getenv("S3_SECRET_KEY"),
-		},
+		bucket:        bucket,
+		csp:           buildCSP(bucket.PublicURL),
+		sessionSecret: []byte(testSecret),
 	}
 }
 
@@ -81,6 +84,9 @@ func newTestPerson(t *testing.T, app *application) int {
 		}
 
 		cleanup := []string{
+			`DELETE FROM api_parentchild WHERE parent_id = $1 OR child_id = $1`,
+			`DELETE FROM api_marriage WHERE person_a_id = $1 OR person_b_id = $1`,
+			`DELETE FROM api_location WHERE person_id = $1`,
 			`DELETE FROM api_photo WHERE person_id = $1`,
 			`DELETE FROM api_person WHERE id = $1`,
 		}
@@ -92,7 +98,7 @@ func newTestPerson(t *testing.T, app *application) int {
 			}
 		}
 
-		_, err = app.people.DB.Exec(ctx, `DELETE FROM api_history WHERE username = $1`, testUser)
+		_, err = app.people.DB.Exec(ctx, `DELETE FROM api_history WHERE recipient = $1`, name)
 		if err != nil {
 			t.Error(err)
 		}
@@ -101,24 +107,15 @@ func newTestPerson(t *testing.T, app *application) int {
 	return id
 }
 
-func TestTemplateCache(t *testing.T) {
-	cache, err := newTemplateCache()
+func testPersonName(t *testing.T, app *application, id int) string {
+	t.Helper()
+
+	var name string
+
+	err := app.people.DB.QueryRow(context.Background(), `SELECT name FROM api_person WHERE id = $1`, id).Scan(&name)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	pages, err := fs.Glob(ui.Files, "html/pages/*.html")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(pages) == 0 {
-		t.Fatal("no pages found")
-	}
-
-	for _, page := range pages {
-		name := filepath.Base(page)
-		if cache[name] == nil {
-			t.Errorf("%s missing from cache", name)
-		}
-	}
+	return name
 }

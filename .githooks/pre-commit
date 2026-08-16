@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+unformatted=$(gofmt -l .)
+if [ -n "$unformatted" ]; then
+	echo "pre-commit: not gofmt'd:"
+	echo "$unformatted" | sed 's/^/  /'
+	echo "fix with: go fmt ./... && git add -u"
+	exit 1
+fi
+
+go vet ./...
+
+if [ -f .env ] && docker compose ps --status running --services 2>/dev/null | grep -qx db; then
+	set -a
+	. ./.env
+	set +a
+else
+	echo "pre-commit: compose is down, so the database and bucket tests will skip."
+fi
+
+go test ./...

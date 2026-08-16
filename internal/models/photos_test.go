@@ -3,67 +3,9 @@ package models
 import (
 	"context"
 	"errors"
-	"os"
 	"strconv"
 	"testing"
-	"time"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-const testUser = "go-test-uploader"
-
-func newTestPool(t *testing.T) *pgxpool.Pool {
-	t.Helper()
-
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		t.Skip("DATABASE_URL is not set; run with: set -a; . ./.env; set +a; go test ./internal/models/")
-	}
-
-	pool, err := pgxpool.New(context.Background(), dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(pool.Close)
-
-	return pool
-}
-
-func newTestPerson(t *testing.T, pool *pgxpool.Pool) (int, string) {
-	t.Helper()
-
-	ctx := context.Background()
-	name := "Test Subject " + strconv.FormatInt(time.Now().UnixNano(), 10)
-
-	var id int
-
-	err := pool.QueryRow(ctx, `INSERT INTO api_person (name) VALUES ($1) RETURNING id`, name).Scan(&id)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Cleanup(func() {
-		cleanup := []string{
-			`DELETE FROM api_photo WHERE person_id = $1`,
-			`DELETE FROM api_person WHERE id = $1`,
-		}
-
-		for _, query := range cleanup {
-			_, err := pool.Exec(ctx, query, id)
-			if err != nil {
-				t.Error(err)
-			}
-		}
-
-		_, err := pool.Exec(ctx, `DELETE FROM api_history WHERE username = $1`, testUser)
-		if err != nil {
-			t.Error(err)
-		}
-	})
-
-	return id, name
-}
 
 func TestPhotoInsertProfilePicOnlyOnTheFirst(t *testing.T) {
 	pool := newTestPool(t)
@@ -177,8 +119,8 @@ func TestPhotoInsertWritesHistory(t *testing.T) {
 	var action, recipient string
 
 	err = pool.QueryRow(ctx,
-		`SELECT action, recipient FROM api_history WHERE username = $1 ORDER BY id DESC LIMIT 1`,
-		testUser).Scan(&action, &recipient)
+		`SELECT action, recipient FROM api_history WHERE recipient = $1 ORDER BY id DESC LIMIT 1`,
+		name).Scan(&action, &recipient)
 	if err != nil {
 		t.Fatal(err)
 	}
