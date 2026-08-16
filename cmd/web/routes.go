@@ -14,6 +14,7 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /ping", ping)
 	mux.HandleFunc("GET /{$}", app.home)
 	mux.HandleFunc("GET /person/{id}", app.person)
+	mux.HandleFunc("GET /person/{id}/photos", app.gallery)
 
 	mux.HandleFunc("GET /login", app.loginForm)
 	mux.HandleFunc("POST /login", app.login)
@@ -25,6 +26,7 @@ func (app *application) routes() http.Handler {
 	mux.Handle("POST /person/{id}/add", app.requireAuth(http.HandlerFunc(app.addRelative)))
 	mux.Handle("GET /person/{id}/delete", app.requireAuth(http.HandlerFunc(app.deleteForm)))
 	mux.Handle("POST /person/{id}/delete", app.requireAuth(http.HandlerFunc(app.delete)))
+	mux.Handle("POST /person/{id}/photos", app.requireAuth(http.HandlerFunc(app.upload)))
 	mux.Handle("GET /person/{id}/relatives", app.requireAuth(http.HandlerFunc(app.relatives)))
 	mux.Handle("POST /person/{id}/relatives/link", app.requireAuth(http.HandlerFunc(app.link)))
 	mux.Handle("POST /person/{id}/relatives/unlink", app.requireAuth(http.HandlerFunc(app.unlink)))

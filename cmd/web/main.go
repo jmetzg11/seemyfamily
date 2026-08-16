@@ -20,7 +20,8 @@ type application struct {
 	people        *models.PersonModel
 	users         *models.UserModel
 	stats         *models.InfoModel
-	photos        *storage.Client
+	photos        *models.PhotoModel
+	bucket        *storage.Client
 	csp           string
 	sessionSecret []byte
 	secureCookies bool
@@ -31,7 +32,7 @@ func main() {
 
 	dsn := mustGetenv(logger, "DATABASE_URL")
 
-	photos := &storage.Client{
+	bucket := &storage.Client{
 		Endpoint:  strings.TrimSuffix(mustGetenv(logger, "S3_ENDPOINT"), "/"),
 		PublicURL: strings.TrimSuffix(mustGetenv(logger, "S3_PUBLIC_URL"), "/"),
 		Region:    mustGetenv(logger, "S3_REGION"),
@@ -76,18 +77,20 @@ func main() {
 		people:        &models.PersonModel{DB: pool},
 		users:         &models.UserModel{DB: pool},
 		stats:         &models.InfoModel{DB: pool},
-		photos:        photos,
-		csp:           buildCSP(photos.PublicURL),
+		photos:        &models.PhotoModel{DB: pool},
+		bucket:        bucket,
+		csp:           buildCSP(bucket.PublicURL),
 		sessionSecret: []byte(sessionSecret),
 		secureCookies: secureCookies,
 	}
 
 	srv := &http.Server{
-		Addr:         ":4000",
-		Handler:      app.routes(),
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		Addr:              ":4000",
+		Handler:           app.routes(),
+		ErrorLog:          slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      10 * time.Second,
 	}
 
 	logger.Info("starting server", "addr", srv.Addr)

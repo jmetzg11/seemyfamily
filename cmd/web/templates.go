@@ -21,6 +21,7 @@ type templateData struct {
 	PersonForm   personForm
 	RelativeForm relativeForm
 	LinkForm     linkForm
+	PhotoForm    photoForm
 
 	Edits []models.Edit
 	Chart chart
@@ -30,6 +31,7 @@ type templateData struct {
 	Person      models.Person
 	Relations   []models.RelationGroup
 	Facts       []models.Fact
+	Photos      []models.Photo
 	Names       []string
 	Search      string
 	Sort        string

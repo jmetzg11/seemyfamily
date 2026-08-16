@@ -33,7 +33,7 @@ func (app *application) notFound(w http.ResponseWriter) {
 
 func (app *application) newTemplateData(r *http.Request) templateData {
 	data := templateData{
-		MediaURL: app.photos.PublicURL,
+		MediaURL: app.bucket.PublicURL,
 	}
 
 	user, ok := userFromContext(r)

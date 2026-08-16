@@ -91,6 +91,11 @@ type linkForm struct {
 	Error    string
 }
 
+type photoForm struct {
+	Description string
+	Error       string
+}
+
 func relativeFormFrom(r *http.Request) relativeForm {
 	return relativeForm{
 		Person:   personFormFrom(r),

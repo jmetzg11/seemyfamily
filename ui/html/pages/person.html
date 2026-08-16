@@ -14,13 +14,14 @@
             {{if .Person.Birthplace}}<dt>Birthplace</dt><dd>{{.Person.Birthplace}}</dd>{{end}}
             {{if .Person.Location}}<dt>Lives in</dt><dd>{{.Person.Location}}</dd>{{end}}
         </dl>
-        {{if .IsAuthenticated}}
         <p class="profile-actions">
+            <a href="/person/{{.Person.ID}}/photos">Photos</a>
+            {{if .IsAuthenticated}}
             <a href="/person/{{.Person.ID}}/edit">Edit details</a>
             <a href="/person/{{.Person.ID}}/add">Add a relative</a>
             <a href="/person/{{.Person.ID}}/relatives">Manage relatives</a>
+            {{end}}
         </p>
-        {{end}}
     </div>
 </header>
 
