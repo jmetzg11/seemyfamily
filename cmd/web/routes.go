@@ -6,6 +6,10 @@ import (
 	"seemyfamily.jmetzg11/ui"
 )
 
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
