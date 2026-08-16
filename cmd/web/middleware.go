@@ -10,6 +10,9 @@ import (
 	"seemyfamily.jmetzg11/internal/models"
 )
 
+const leafletHost = "https://unpkg.com"
+const tileHost = "https://tile.openstreetmap.org"
+
 func buildCSP(mediaURL string) string {
 	imgSrc := "'self'"
 
@@ -18,9 +21,11 @@ func buildCSP(mediaURL string) string {
 		imgSrc += " " + u.Scheme + "://" + u.Host
 	}
 
+	imgSrc += " " + tileHost
+
 	return "default-src 'self'; " +
-		"script-src 'self'; " +
-		"style-src 'self'; " +
+		"script-src 'self' " + leafletHost + "; " +
+		"style-src 'self' " + leafletHost + "; " +
 		"img-src " + imgSrc + "; " +
 		"frame-ancestors 'none'; " +
 		"base-uri 'self'"

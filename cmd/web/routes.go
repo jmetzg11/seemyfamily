@@ -19,6 +19,7 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /{$}", app.home)
 	mux.HandleFunc("GET /person/{id}", app.person)
 	mux.HandleFunc("GET /person/{id}/photos", app.gallery)
+	mux.HandleFunc("GET /map", app.mapPage)
 
 	mux.HandleFunc("GET /login", app.loginForm)
 	mux.HandleFunc("POST /login", app.login)

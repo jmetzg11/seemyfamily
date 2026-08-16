@@ -1,0 +1,20 @@
+#map {
+    height: 75vh;
+    border: 1px solid var(--border);
+}
+
+.places {
+    margin: 0.5rem 0 0;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.place h4 {
+    margin: 0 0 0.4rem;
+    font-size: 0.9rem;
+}
+
+.place a {
+    display: block;
+    color: var(--text);
+}

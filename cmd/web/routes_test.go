@@ -110,6 +110,7 @@ func TestRoutesPublicEndpointsAreReachable(t *testing.T) {
 		{http.MethodGet, "/"},
 		{http.MethodGet, "/person/1"},
 		{http.MethodGet, "/person/1/photos"},
+		{http.MethodGet, "/map"},
 		{http.MethodGet, "/login"},
 	}
 

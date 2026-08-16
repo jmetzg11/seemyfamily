@@ -51,6 +51,7 @@ func newTestApp(t *testing.T) *application {
 		users:         &models.UserModel{DB: pool},
 		stats:         &models.InfoModel{DB: pool},
 		photos:        &models.PhotoModel{DB: pool},
+		locations:     &models.LocationModel{DB: pool},
 		bucket:        bucket,
 		csp:           buildCSP(bucket.PublicURL),
 		sessionSecret: []byte(testSecret),

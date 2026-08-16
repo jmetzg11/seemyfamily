@@ -34,14 +34,14 @@ func TestBuildCSP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			csp := buildCSP(tt.mediaURL)
 
-			if !strings.Contains(csp, "img-src "+tt.wantImgSrc+";") {
-				t.Errorf("got %q; want img-src %q", csp, tt.wantImgSrc)
+			if !strings.Contains(csp, "img-src "+tt.wantImgSrc+" "+tileHost+";") {
+				t.Errorf("got %q; want img-src %q plus the tile host", csp, tt.wantImgSrc)
 			}
 
 			for _, directive := range []string{
 				"default-src 'self'",
-				"script-src 'self'",
-				"style-src 'self'",
+				"script-src 'self' " + leafletHost,
+				"style-src 'self' " + leafletHost,
 				"frame-ancestors 'none'",
 				"base-uri 'self'",
 			} {

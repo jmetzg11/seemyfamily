@@ -21,6 +21,7 @@ type application struct {
 	users         *models.UserModel
 	stats         *models.InfoModel
 	photos        *models.PhotoModel
+	locations     *models.LocationModel
 	bucket        *storage.Client
 	csp           string
 	sessionSecret []byte
@@ -78,6 +79,7 @@ func main() {
 		users:         &models.UserModel{DB: pool},
 		stats:         &models.InfoModel{DB: pool},
 		photos:        &models.PhotoModel{DB: pool},
+		locations:     &models.LocationModel{DB: pool},
 		bucket:        bucket,
 		csp:           buildCSP(bucket.PublicURL),
 		sessionSecret: []byte(sessionSecret),

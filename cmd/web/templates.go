@@ -27,6 +27,9 @@ type templateData struct {
 	Chart chart
 	Range string
 
+	MapData template.JS
+	Places  int
+
 	People      []models.Person
 	Person      models.Person
 	Relations   []models.RelationGroup
