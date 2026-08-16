@@ -14,11 +14,6 @@ type Edit struct {
 	Recipient string
 }
 
-type VisitorBucket struct {
-	Start time.Time
-	Count int
-}
-
 type InfoModel struct {
 	DB *pgxpool.Pool
 }
@@ -49,42 +44,4 @@ func (m *InfoModel) Edits(ctx context.Context, limit int) ([]Edit, error) {
 	}
 
 	return edits, rows.Err()
-}
-
-const visitorsQuery = `
-WITH buckets AS (
-    SELECT generate_series(
-        CURRENT_DATE - make_interval(days => $1::int - 1),
-        CURRENT_DATE,
-        make_interval(days => $2::int)
-    )::date AS start
-)
-SELECT b.start,
-       (SELECT count(*)
-        FROM api_visitor v
-        WHERE v.date >= b.start
-          AND v.date < b.start + make_interval(days => $2::int))
-FROM buckets b
-ORDER BY b.start`
-
-func (m *InfoModel) Visitors(ctx context.Context, days, groupSize int) ([]VisitorBucket, error) {
-	rows, err := m.DB.Query(ctx, visitorsQuery, days, groupSize)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var buckets []VisitorBucket
-
-	for rows.Next() {
-		var b VisitorBucket
-
-		err = rows.Scan(&b.Start, &b.Count)
-		if err != nil {
-			return nil, err
-		}
-		buckets = append(buckets, b)
-	}
-
-	return buckets, rows.Err()
 }

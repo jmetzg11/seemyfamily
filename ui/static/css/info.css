@@ -1,4 +1,3 @@
-.visitors h2,
 .edits h2 {
     font-size: 0.85rem;
     color: var(--muted);
@@ -7,47 +6,6 @@
     border-bottom: 1px solid var(--border);
     padding-bottom: 0.35rem;
     margin-bottom: 0.75rem;
-}
-
-.ranges {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.ranges a {
-    padding: 0.25rem 0.7rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--text);
-    text-decoration: none;
-    font-size: 0.85rem;
-}
-
-.ranges a:hover {
-    background: var(--hover);
-}
-
-.ranges a.active {
-    background: var(--accent);
-    border-color: var(--accent);
-}
-
-.chart {
-    width: 100%;
-    max-width: 720px;
-    height: auto;
-    margin-bottom: 2rem;
-}
-
-.chart .bar {
-    fill: var(--accent);
-}
-
-.chart .tick {
-    fill: var(--muted);
-    font-size: 11px;
-    font-family: system-ui, sans-serif;
 }
 
 table.history {

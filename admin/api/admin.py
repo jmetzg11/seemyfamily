@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import History, Location, Marriage, ParentChild, Person, Photo, Visitor
+from .models import History, Location, Marriage, ParentChild, Person, Photo
 
 
 class LocationInline(admin.StackedInline):
@@ -71,9 +71,3 @@ class HistoryAdmin(admin.ModelAdmin):
     list_display = ['created_at', 'username', 'action', 'recipient']
     list_filter = ['action']
     search_fields = ['username', 'recipient']
-
-
-@admin.register(Visitor)
-class VisitorAdmin(admin.ModelAdmin):
-    list_display = ['ip_address', 'date']
-    list_filter = ['date']

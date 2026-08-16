@@ -1,79 +1,497 @@
 [
-  {"model": "auth.user", "pk": 1, "fields": {"username": "admin", "email": "", "password": "pbkdf2_sha256$1500000$xT0rOS1a20sYdLxorfNVug$IbfYM7jlW/MARo2rYhVAYSMStjGUpPQFCXnapXn2O5o=", "first_name": "", "last_name": "", "is_superuser": true, "is_staff": true, "is_active": true, "last_login": null, "date_joined": "2026-01-01T00:00:00Z", "groups": [], "user_permissions": []}},
-  {"model": "auth.user", "pk": 2, "fields": {"username": "guest", "email": "", "password": "pbkdf2_sha256$1500000$bFB6pZVMgh6Zo7yPv8VvAn$2GrjnMJiy6PKnlJylr53LopAFUmHvhFR3jSkx7rzYM4=", "first_name": "", "last_name": "", "is_superuser": false, "is_staff": false, "is_active": true, "last_login": null, "date_joined": "2026-01-01T00:00:00Z", "groups": [], "user_permissions": []}},
-
-  {"model": "api.person", "pk": 1, "fields": {"name": "Mira Vance", "birthyear": 1938, "birthplace": "Lisbon, Portugal", "bio": "Seamstress who ran a small shop off the Rua da Prata for forty years."}},
-  {"model": "api.person", "pk": 2, "fields": {"name": "Otto Vance", "birthyear": 1936, "birthplace": "Porto, Portugal", "bio": "Merchant marine, then a dockyard electrician. Kept a logbook of every ship he sailed on, which the family still has. Died in 2011."}},
-  {"model": "api.person", "pk": 3, "fields": {"name": "Boris Vance", "birthyear": 1962, "birthplace": "Lisbon, Portugal", "bio": "Structural engineer. Married twice."}},
-  {"model": "api.person", "pk": 4, "fields": {"name": "Ada Kovac", "birthyear": 1964, "birthplace": "Zagreb, Croatia", "bio": "Radiologist."}},
-  {"model": "api.person", "pk": 5, "fields": {"name": "Elena Roth", "birthyear": 1968, "birthplace": "Belgrade, Serbia", "bio": "Translator, working mostly from German."}},
-  {"model": "api.person", "pk": 6, "fields": {"name": "Pavel Roth", "birthyear": 1965, "birthplace": "Novi Sad, Serbia", "bio": null}},
-  {"model": "api.person", "pk": 7, "fields": {"name": "Cleo Vance", "birthyear": 1988, "birthplace": "Belgrade, Serbia", "bio": "Cartographer."}},
-  {"model": "api.person", "pk": 8, "fields": {"name": "Dmitri Vance", "birthyear": 1990, "birthplace": "Belgrade, Serbia", "bio": "Sound engineer."}},
-  {"model": "api.person", "pk": 9, "fields": {"name": "Fyodor Vance", "birthyear": 1996, "birthplace": "Berlin, Germany", "bio": null}},
-  {"model": "api.person", "pk": 10, "fields": {"name": "Greta Roth", "birthyear": 1992, "birthplace": "Belgrade, Serbia", "bio": "Pastry chef."}},
-  {"model": "api.person", "pk": 11, "fields": {"name": "Hana Ilic", "birthyear": 1991, "birthplace": null, "bio": "Parents not recorded."}},
-  {"model": "api.person", "pk": 12, "fields": {"name": "Nils Vance", "birthyear": 2018, "birthplace": "Austin, Texas", "bio": null}},
-
-  {"model": "api.parentchild", "pk": 1, "fields": {"parent": 2, "child": 3}},
-  {"model": "api.parentchild", "pk": 2, "fields": {"parent": 1, "child": 3}},
-  {"model": "api.parentchild", "pk": 3, "fields": {"parent": 3, "child": 7}},
-  {"model": "api.parentchild", "pk": 4, "fields": {"parent": 4, "child": 7}},
-  {"model": "api.parentchild", "pk": 5, "fields": {"parent": 3, "child": 8}},
-  {"model": "api.parentchild", "pk": 6, "fields": {"parent": 4, "child": 8}},
-  {"model": "api.parentchild", "pk": 7, "fields": {"parent": 3, "child": 9}},
-  {"model": "api.parentchild", "pk": 8, "fields": {"parent": 5, "child": 9}},
-  {"model": "api.parentchild", "pk": 9, "fields": {"parent": 5, "child": 10}},
-  {"model": "api.parentchild", "pk": 10, "fields": {"parent": 6, "child": 10}},
-  {"model": "api.parentchild", "pk": 11, "fields": {"parent": 7, "child": 12}},
-  {"model": "api.parentchild", "pk": 12, "fields": {"parent": 11, "child": 12}},
-
-  {"model": "api.marriage", "pk": 1, "fields": {"person_a": 1, "person_b": 2}},
-  {"model": "api.marriage", "pk": 2, "fields": {"person_a": 3, "person_b": 4}},
-  {"model": "api.marriage", "pk": 3, "fields": {"person_a": 3, "person_b": 5}},
-  {"model": "api.marriage", "pk": 4, "fields": {"person_a": 5, "person_b": 6}},
-  {"model": "api.marriage", "pk": 5, "fields": {"person_a": 7, "person_b": 11}},
-
-  {"model": "api.location", "pk": 1, "fields": {"person": 1, "name": "Lisbon, Portugal", "lat": 38.7223, "lng": -9.1393}},
-  {"model": "api.location", "pk": 2, "fields": {"person": 2, "name": "Lisbon, Portugal", "lat": 38.7223, "lng": -9.1393}},
-  {"model": "api.location", "pk": 3, "fields": {"person": 3, "name": "Belgrade, Serbia", "lat": 44.7866, "lng": 20.4489}},
-  {"model": "api.location", "pk": 4, "fields": {"person": 4, "name": "Zagreb, Croatia", "lat": 45.815, "lng": 15.9819}},
-  {"model": "api.location", "pk": 5, "fields": {"person": 5, "name": "Belgrade, Serbia", "lat": 44.7866, "lng": 20.4489}},
-  {"model": "api.location", "pk": 6, "fields": {"person": 7, "name": "Austin, Texas", "lat": 30.2672, "lng": -97.7431}},
-  {"model": "api.location", "pk": 7, "fields": {"person": 8, "name": "Austin, Texas", "lat": 30.2672, "lng": -97.7431}},
-  {"model": "api.location", "pk": 8, "fields": {"person": 9, "name": "Berlin, Germany", "lat": 52.52, "lng": 13.405}},
-  {"model": "api.location", "pk": 9, "fields": {"person": 10, "name": "Berlin, Germany", "lat": 52.52, "lng": 13.405}},
-  {"model": "api.location", "pk": 10, "fields": {"person": 11, "name": "Austin, Texas", "lat": 30.2672, "lng": -97.7431}},
-  {"model": "api.location", "pk": 11, "fields": {"person": 12, "name": "Austin, Texas", "lat": 30.2672, "lng": -97.7431}},
-
-  {"model": "api.photo", "pk": 1, "fields": {"person": 7, "description": "At the coast", "file_path": "default.jpeg", "profile_pic": true, "rotation": 0}},
-  {"model": "api.photo", "pk": 2, "fields": {"person": 7, "description": null, "file_path": "default.jpeg", "profile_pic": false, "rotation": 1}},
-  {"model": "api.photo", "pk": 3, "fields": {"person": 3, "description": "Portrait", "file_path": "default.jpeg", "profile_pic": true, "rotation": 0}},
-
-  {"model": "api.history", "pk": 1, "fields": {"created_at": "2026-06-02T14:21:00Z", "username": "admin", "action": "created", "recipient": "Nils Vance"}},
-  {"model": "api.history", "pk": 2, "fields": {"created_at": "2026-06-19T09:05:00Z", "username": "admin", "action": "updated details", "recipient": "Boris Vance"}},
-  {"model": "api.history", "pk": 3, "fields": {"created_at": "2026-07-11T18:40:00Z", "username": "admin", "action": "added photo", "recipient": "Cleo Vance"}},
-  {"model": "api.history", "pk": 4, "fields": {"created_at": "2026-07-28T11:12:00Z", "username": "admin", "action": "created", "recipient": "Hana Ilic"}},
-  {"model": "api.history", "pk": 5, "fields": {"created_at": "2026-08-04T16:55:00Z", "username": "admin", "action": "updated details", "recipient": "Greta Roth"}},
-  {"model": "api.history", "pk": 6, "fields": {"created_at": "2026-08-08T08:30:00Z", "username": "admin", "action": "added photo", "recipient": "Boris Vance"}},
-
-  {"model": "api.visitor", "pk": 1, "fields": {"ip_address": "203.0.113.10", "date": "2026-03-14"}},
-  {"model": "api.visitor", "pk": 2, "fields": {"ip_address": "203.0.113.11", "date": "2026-03-29"}},
-  {"model": "api.visitor", "pk": 3, "fields": {"ip_address": "203.0.113.12", "date": "2026-04-17"}},
-  {"model": "api.visitor", "pk": 4, "fields": {"ip_address": "203.0.113.13", "date": "2026-05-02"}},
-  {"model": "api.visitor", "pk": 5, "fields": {"ip_address": "203.0.113.14", "date": "2026-05-23"}},
-  {"model": "api.visitor", "pk": 6, "fields": {"ip_address": "203.0.113.15", "date": "2026-06-08"}},
-  {"model": "api.visitor", "pk": 7, "fields": {"ip_address": "203.0.113.16", "date": "2026-06-27"}},
-  {"model": "api.visitor", "pk": 8, "fields": {"ip_address": "203.0.113.17", "date": "2026-07-13"}},
-  {"model": "api.visitor", "pk": 9, "fields": {"ip_address": "203.0.113.18", "date": "2026-07-19"}},
-  {"model": "api.visitor", "pk": 10, "fields": {"ip_address": "203.0.113.19", "date": "2026-07-26"}},
-  {"model": "api.visitor", "pk": 11, "fields": {"ip_address": "203.0.113.20", "date": "2026-08-01"}},
-  {"model": "api.visitor", "pk": 12, "fields": {"ip_address": "203.0.113.21", "date": "2026-08-03"}},
-  {"model": "api.visitor", "pk": 13, "fields": {"ip_address": "203.0.113.22", "date": "2026-08-04"}},
-  {"model": "api.visitor", "pk": 14, "fields": {"ip_address": "203.0.113.23", "date": "2026-08-05"}},
-  {"model": "api.visitor", "pk": 15, "fields": {"ip_address": "203.0.113.24", "date": "2026-08-05"}},
-  {"model": "api.visitor", "pk": 16, "fields": {"ip_address": "203.0.113.25", "date": "2026-08-07"}},
-  {"model": "api.visitor", "pk": 17, "fields": {"ip_address": "203.0.113.26", "date": "2026-08-08"}},
-  {"model": "api.visitor", "pk": 18, "fields": {"ip_address": "203.0.113.27", "date": "2026-08-09"}},
-  {"model": "api.visitor", "pk": 19, "fields": {"ip_address": "203.0.113.28", "date": "2026-08-09"}}
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "email": "",
+      "password": "pbkdf2_sha256$1500000$xT0rOS1a20sYdLxorfNVug$IbfYM7jlW/MARo2rYhVAYSMStjGUpPQFCXnapXn2O5o=",
+      "first_name": "",
+      "last_name": "",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true,
+      "last_login": null,
+      "date_joined": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "guest",
+      "email": "",
+      "password": "pbkdf2_sha256$1500000$bFB6pZVMgh6Zo7yPv8VvAn$2GrjnMJiy6PKnlJylr53LopAFUmHvhFR3jSkx7rzYM4=",
+      "first_name": "",
+      "last_name": "",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "last_login": null,
+      "date_joined": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 1,
+    "fields": {
+      "name": "Mira Vance",
+      "birthyear": 1938,
+      "birthplace": "Lisbon, Portugal",
+      "bio": "Seamstress who ran a small shop off the Rua da Prata for forty years."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 2,
+    "fields": {
+      "name": "Otto Vance",
+      "birthyear": 1936,
+      "birthplace": "Porto, Portugal",
+      "bio": "Merchant marine, then a dockyard electrician. Kept a logbook of every ship he sailed on, which the family still has. Died in 2011."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 3,
+    "fields": {
+      "name": "Boris Vance",
+      "birthyear": 1962,
+      "birthplace": "Lisbon, Portugal",
+      "bio": "Structural engineer. Married twice."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 4,
+    "fields": {
+      "name": "Ada Kovac",
+      "birthyear": 1964,
+      "birthplace": "Zagreb, Croatia",
+      "bio": "Radiologist."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 5,
+    "fields": {
+      "name": "Elena Roth",
+      "birthyear": 1968,
+      "birthplace": "Belgrade, Serbia",
+      "bio": "Translator, working mostly from German."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 6,
+    "fields": {
+      "name": "Pavel Roth",
+      "birthyear": 1965,
+      "birthplace": "Novi Sad, Serbia",
+      "bio": null
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 7,
+    "fields": {
+      "name": "Cleo Vance",
+      "birthyear": 1988,
+      "birthplace": "Belgrade, Serbia",
+      "bio": "Cartographer."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 8,
+    "fields": {
+      "name": "Dmitri Vance",
+      "birthyear": 1990,
+      "birthplace": "Belgrade, Serbia",
+      "bio": "Sound engineer."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 9,
+    "fields": {
+      "name": "Fyodor Vance",
+      "birthyear": 1996,
+      "birthplace": "Berlin, Germany",
+      "bio": null
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 10,
+    "fields": {
+      "name": "Greta Roth",
+      "birthyear": 1992,
+      "birthplace": "Belgrade, Serbia",
+      "bio": "Pastry chef."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 11,
+    "fields": {
+      "name": "Hana Ilic",
+      "birthyear": 1991,
+      "birthplace": null,
+      "bio": "Parents not recorded."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 12,
+    "fields": {
+      "name": "Nils Vance",
+      "birthyear": 2018,
+      "birthplace": "Austin, Texas",
+      "bio": null
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 1,
+    "fields": {
+      "parent": 2,
+      "child": 3
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 2,
+    "fields": {
+      "parent": 1,
+      "child": 3
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 3,
+    "fields": {
+      "parent": 3,
+      "child": 7
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 4,
+    "fields": {
+      "parent": 4,
+      "child": 7
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 5,
+    "fields": {
+      "parent": 3,
+      "child": 8
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 6,
+    "fields": {
+      "parent": 4,
+      "child": 8
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 7,
+    "fields": {
+      "parent": 3,
+      "child": 9
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 8,
+    "fields": {
+      "parent": 5,
+      "child": 9
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 9,
+    "fields": {
+      "parent": 5,
+      "child": 10
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 10,
+    "fields": {
+      "parent": 6,
+      "child": 10
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 11,
+    "fields": {
+      "parent": 7,
+      "child": 12
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 12,
+    "fields": {
+      "parent": 11,
+      "child": 12
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 1,
+    "fields": {
+      "person_a": 1,
+      "person_b": 2
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 2,
+    "fields": {
+      "person_a": 3,
+      "person_b": 4
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 3,
+    "fields": {
+      "person_a": 3,
+      "person_b": 5
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 4,
+    "fields": {
+      "person_a": 5,
+      "person_b": 6
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 5,
+    "fields": {
+      "person_a": 7,
+      "person_b": 11
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 1,
+    "fields": {
+      "person": 1,
+      "name": "Lisbon, Portugal",
+      "lat": 38.7223,
+      "lng": -9.1393
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 2,
+    "fields": {
+      "person": 2,
+      "name": "Lisbon, Portugal",
+      "lat": 38.7223,
+      "lng": -9.1393
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 3,
+    "fields": {
+      "person": 3,
+      "name": "Belgrade, Serbia",
+      "lat": 44.7866,
+      "lng": 20.4489
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 4,
+    "fields": {
+      "person": 4,
+      "name": "Zagreb, Croatia",
+      "lat": 45.815,
+      "lng": 15.9819
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 5,
+    "fields": {
+      "person": 5,
+      "name": "Belgrade, Serbia",
+      "lat": 44.7866,
+      "lng": 20.4489
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 6,
+    "fields": {
+      "person": 7,
+      "name": "Austin, Texas",
+      "lat": 30.2672,
+      "lng": -97.7431
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 7,
+    "fields": {
+      "person": 8,
+      "name": "Austin, Texas",
+      "lat": 30.2672,
+      "lng": -97.7431
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 8,
+    "fields": {
+      "person": 9,
+      "name": "Berlin, Germany",
+      "lat": 52.52,
+      "lng": 13.405
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 9,
+    "fields": {
+      "person": 10,
+      "name": "Berlin, Germany",
+      "lat": 52.52,
+      "lng": 13.405
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 10,
+    "fields": {
+      "person": 11,
+      "name": "Austin, Texas",
+      "lat": 30.2672,
+      "lng": -97.7431
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 11,
+    "fields": {
+      "person": 12,
+      "name": "Austin, Texas",
+      "lat": 30.2672,
+      "lng": -97.7431
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 1,
+    "fields": {
+      "person": 7,
+      "description": "At the coast",
+      "file_path": "default.jpeg",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 2,
+    "fields": {
+      "person": 7,
+      "description": null,
+      "file_path": "default.jpeg",
+      "profile_pic": false,
+      "rotation": 1
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 3,
+    "fields": {
+      "person": 3,
+      "description": "Portrait",
+      "file_path": "default.jpeg",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-06-02T14:21:00Z",
+      "username": "admin",
+      "action": "created",
+      "recipient": "Nils Vance"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-06-19T09:05:00Z",
+      "username": "admin",
+      "action": "updated details",
+      "recipient": "Boris Vance"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 3,
+    "fields": {
+      "created_at": "2026-07-11T18:40:00Z",
+      "username": "admin",
+      "action": "added photo",
+      "recipient": "Cleo Vance"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 4,
+    "fields": {
+      "created_at": "2026-07-28T11:12:00Z",
+      "username": "admin",
+      "action": "created",
+      "recipient": "Hana Ilic"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 5,
+    "fields": {
+      "created_at": "2026-08-04T16:55:00Z",
+      "username": "admin",
+      "action": "updated details",
+      "recipient": "Greta Roth"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 6,
+    "fields": {
+      "created_at": "2026-08-08T08:30:00Z",
+      "username": "admin",
+      "action": "added photo",
+      "recipient": "Boris Vance"
+    }
+  }
 ]

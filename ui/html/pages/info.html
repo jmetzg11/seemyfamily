@@ -5,29 +5,6 @@
 {{end}}
 
 {{define "main"}}
-<section class="visitors">
-    <h2>Visitors</h2>
-
-    <div class="ranges">
-        <a href="/info?range=week" {{if eq .Range "week"}}class="active"{{end}}>Week</a>
-        <a href="/info?range=month" {{if eq .Range "month"}}class="active"{{end}}>Month</a>
-        <a href="/info?range=halfyear" {{if eq .Range "halfyear"}}class="active"{{end}}>6 months</a>
-    </div>
-
-    {{with .Chart}}
-    <svg class="chart" viewBox="0 0 {{.Width}} {{.Height}}" role="img" aria-label="Visitors over time">
-        {{range .Bars}}
-        <rect class="bar" x="{{.X}}" y="{{.Y}}" width="{{.Width}}" height="{{.Height}}">
-            <title>{{.Count}}</title>
-        </rect>
-        {{if .Label}}
-        <text class="tick" x="{{.X}}" y="{{$.Chart.LabelY}}">{{.Label}}</text>
-        {{end}}
-        {{end}}
-    </svg>
-    {{end}}
-</section>
-
 <section class="edits">
     <h2>Recent edits</h2>
 

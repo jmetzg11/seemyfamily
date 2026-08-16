@@ -85,17 +85,3 @@ class History(models.Model):
 
     def __str__(self):
         return f'{self.username} {self.action} {self.recipient}'
-
-
-class Visitor(models.Model):
-    ip_address = models.CharField(max_length=225)
-    date = models.DateField(default=timezone.localdate)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['ip_address', 'date'], name='unique_visitor_per_day'),
-        ]
-        indexes = [models.Index(fields=['date'])]
-
-    def __str__(self):
-        return f'{self.ip_address} on {self.date}'

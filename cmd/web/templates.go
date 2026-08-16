@@ -24,8 +24,6 @@ type templateData struct {
 	PhotoForm    photoForm
 
 	Edits []models.Edit
-	Chart chart
-	Range string
 
 	MapData template.JS
 	Places  int
