@@ -1,10 +1,11 @@
-# flyctl launch added from .gitignore
-venv
-api/__pycache__
-api/migrations/__pycache__
-backend/__pycache__
-media/*
-!media/photos/default.jpeg
-
+.git
+.githooks
 **/.env
+tmp
+admin
+media
+docker-compose.yml
 fly.toml
+Makefile
+README.md
+notes.txt
