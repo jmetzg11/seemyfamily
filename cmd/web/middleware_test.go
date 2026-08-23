@@ -172,6 +172,92 @@ func TestAuthenticatePassesAnonymousThrough(t *testing.T) {
 	}
 }
 
+func TestAuthenticateAttachesTheUser(t *testing.T) {
+	app := newTestApp(t)
+	id, username := haNewUser(t, app)
+
+	called := false
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+
+		user, ok := userFromContext(r)
+		if !ok {
+			t.Fatal("got no user in context; a valid session must authenticate the request")
+		}
+		if user.ID != id {
+			t.Errorf("got user %d; want %d", user.ID, id)
+		}
+		if user.Name != username {
+			t.Errorf("got name %q; want %q", user.Name, username)
+		}
+	})
+
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r.AddCookie(issueCookie(t, app, id))
+
+	w := httptest.NewRecorder()
+	app.authenticate(next).ServeHTTP(w, r)
+
+	if !called {
+		t.Fatal("next handler did not run")
+	}
+	if cookies := (&http.Response{Header: w.Header()}).Cookies(); len(cookies) != 0 {
+		t.Errorf("got cookies %v; want none — a good session must be left alone", cookies)
+	}
+}
+
+func TestAuthenticateClearsAStaleCookie(t *testing.T) {
+	tests := []struct {
+		name  string
+		query string
+	}{
+		{"deleted user", `DELETE FROM auth_user WHERE id = $1`},
+		{"deactivated user", `UPDATE auth_user SET is_active = false WHERE id = $1`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := newTestApp(t)
+			id, _ := haNewUser(t, app)
+
+			cookie := issueCookie(t, app, id)
+
+			_, err := app.users.DB.Exec(context.Background(), tt.query, id)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			called := false
+			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				called = true
+
+				_, ok := userFromContext(r)
+				if ok {
+					t.Error("got a user in context; the account behind the session is gone")
+				}
+			})
+
+			r := httptest.NewRequest(http.MethodGet, "/", nil)
+			r.AddCookie(cookie)
+
+			w := httptest.NewRecorder()
+			app.authenticate(next).ServeHTTP(w, r)
+
+			if !called {
+				t.Fatal("next handler did not run; a stale session still browses as anonymous")
+			}
+
+			got := (&http.Response{Header: w.Header()}).Cookies()
+			if len(got) != 1 || got[0].Name != sessionCookie {
+				t.Fatalf("got cookies %v; want the session cookie cleared", got)
+			}
+			if got[0].Value != "" || got[0].MaxAge >= 0 {
+				t.Errorf("got cookie %q with MaxAge %d; want an empty value and a negative MaxAge", got[0].Value, got[0].MaxAge)
+			}
+		})
+	}
+}
+
 func TestRecoverPanic(t *testing.T) {
 	app := &application{logger: slog.New(slog.DiscardHandler)}
 
