@@ -38,7 +38,7 @@ services:
       until mc alias set local http://storage:9000 seemyfamily donkey6donkey6; do sleep 1; done;
       mc mb --ignore-existing local/photos;
       mc anonymous set download local/photos;
-      mc cp /seed/default.jpeg local/photos/default.jpeg;
+      mc mirror --overwrite /seed local/photos;
       "
 
 volumes:

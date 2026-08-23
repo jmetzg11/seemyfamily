@@ -12,6 +12,7 @@ media/*
 !media/photos/
 media/photos/*
 !media/photos/default.jpeg
+!media/photos/seed-*.png
 
 notes.txt
 PLAN.md
