@@ -9,7 +9,7 @@ run:
 	docker compose up -d
 	@until docker compose exec -T db pg_isready -U postgres -d seemyfamily >/dev/null 2>&1; do sleep 1; done
 	@cd admin && uv run python manage.py migrate
-	@cd admin && uv run python manage.py loaddata dev.json
+	@cd admin && uv run python manage.py loaddata api/fixtures/[0-9]*.json
 	@trap 'pkill -f "[m]anage.py runserver" >/dev/null 2>&1 || true' EXIT; \
 	set -a; . ./.env; set +a; \
 	(cd admin && uv run python manage.py runserver 8000 &); \

@@ -1,0 +1,62 @@
+[
+  {
+    "model": "api.history",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-06-02T14:21:00Z",
+      "username": "admin",
+      "action": "created",
+      "recipient": "Nils Vance"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 2,
+    "fields": {
+      "created_at": "2026-06-19T09:05:00Z",
+      "username": "admin",
+      "action": "updated details",
+      "recipient": "Boris Vance"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 3,
+    "fields": {
+      "created_at": "2026-07-11T18:40:00Z",
+      "username": "admin",
+      "action": "added photo",
+      "recipient": "Cleo Vance"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 4,
+    "fields": {
+      "created_at": "2026-07-28T11:12:00Z",
+      "username": "admin",
+      "action": "created",
+      "recipient": "Marko Ilic"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 5,
+    "fields": {
+      "created_at": "2026-08-04T16:55:00Z",
+      "username": "admin",
+      "action": "updated details",
+      "recipient": "Greta Roth"
+    }
+  },
+  {
+    "model": "api.history",
+    "pk": 6,
+    "fields": {
+      "created_at": "2026-08-08T08:30:00Z",
+      "username": "admin",
+      "action": "added photo",
+      "recipient": "Boris Vance"
+    }
+  }
+]

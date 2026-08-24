@@ -1,0 +1,122 @@
+[
+  {
+    "model": "api.person",
+    "pk": 1,
+    "fields": {
+      "name": "Mira Vance",
+      "birthyear": 1938,
+      "birthplace": "Lisbon, Portugal",
+      "bio": "Seamstress who ran a small shop off the Rua da Prata for forty years."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 2,
+    "fields": {
+      "name": "Otto Vance",
+      "birthyear": 1936,
+      "birthplace": "Porto, Portugal",
+      "bio": "Merchant marine, then a dockyard electrician. Kept a logbook of every ship he sailed on, which the family still has. Died in 2011."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 3,
+    "fields": {
+      "name": "Boris Vance",
+      "birthyear": 1962,
+      "birthplace": "Lisbon, Portugal",
+      "bio": "Structural engineer. Married twice."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 4,
+    "fields": {
+      "name": "Ada Kovac",
+      "birthyear": 1964,
+      "birthplace": "Zagreb, Croatia",
+      "bio": "Radiologist."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 5,
+    "fields": {
+      "name": "Elena Roth",
+      "birthyear": 1968,
+      "birthplace": "Belgrade, Serbia",
+      "bio": "Translator, working mostly from German."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 6,
+    "fields": {
+      "name": "Pavel Roth",
+      "birthyear": 1965,
+      "birthplace": "Novi Sad, Serbia",
+      "bio": null
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 7,
+    "fields": {
+      "name": "Cleo Vance",
+      "birthyear": 1988,
+      "birthplace": "Belgrade, Serbia",
+      "bio": "Cartographer."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 8,
+    "fields": {
+      "name": "Dmitri Vance",
+      "birthyear": 1990,
+      "birthplace": "Belgrade, Serbia",
+      "bio": "Sound engineer."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 9,
+    "fields": {
+      "name": "Fyodor Vance",
+      "birthyear": 1996,
+      "birthplace": "Berlin, Germany",
+      "bio": null
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 10,
+    "fields": {
+      "name": "Greta Roth",
+      "birthyear": 1992,
+      "birthplace": "Belgrade, Serbia",
+      "bio": "Pastry chef."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 11,
+    "fields": {
+      "name": "Marko Ilic",
+      "birthyear": 1991,
+      "birthplace": null,
+      "bio": "Parents not recorded."
+    }
+  },
+  {
+    "model": "api.person",
+    "pk": 12,
+    "fields": {
+      "name": "Nils Vance",
+      "birthyear": 2018,
+      "birthplace": "Austin, Texas",
+      "bio": null
+    }
+  }
+]
