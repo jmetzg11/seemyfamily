@@ -25,6 +25,10 @@
 <p class="empty">No photos yet.</p>
 {{end}}
 
+<dialog class="viewer">
+    <img alt="" />
+</dialog>
+
 {{if .IsAuthenticated}}
 <form class="record" method="POST" action="/person/{{.Person.ID}}/photos" enctype="multipart/form-data">
     <h2>Add a photo</h2>
@@ -45,4 +49,8 @@
     </div>
 </form>
 {{end}}
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/js/photos.js"></script>
 {{end}}

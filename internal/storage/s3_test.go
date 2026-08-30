@@ -109,6 +109,18 @@ func TestPutRejectsBadSecret(t *testing.T) {
 	t.Log(err)
 }
 
+func TestDefaultPhotoExists(t *testing.T) {
+	c := testClient(t)
+
+	status, body := fetch(t, c.PublicURL+"/default.jpeg")
+	if status != http.StatusOK {
+		t.Fatalf("got status %d for default.jpeg; want 200. People with no photo will show a broken image.", status)
+	}
+	if len(body) == 0 {
+		t.Error("default.jpeg is empty")
+	}
+}
+
 func TestSignsTheRequestedPath(t *testing.T) {
 	tests := []struct {
 		name     string
