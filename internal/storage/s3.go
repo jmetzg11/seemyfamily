@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -39,9 +40,14 @@ func (c *Client) Delete(ctx context.Context, key string) error {
 }
 
 func (c *Client) do(ctx context.Context, method, key, contentType string, body []byte) error {
-	path := "/" + c.Bucket + "/" + encodePath(key)
+	endpoint, err := url.Parse(c.Endpoint)
+	if err != nil {
+		return err
+	}
 
-	req, err := http.NewRequestWithContext(ctx, method, c.Endpoint+path, bytes.NewReader(body))
+	path := endpoint.EscapedPath() + "/" + c.Bucket + "/" + encodePath(key)
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.Scheme+"://"+endpoint.Host+path, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
