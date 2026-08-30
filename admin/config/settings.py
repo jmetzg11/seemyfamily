@@ -51,10 +51,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-if os.environ.get('DB') == 'prod':
-    DATABASE_URL = os.environ['PROD_DATABASE_URL']
-else:
-    DATABASE_URL = os.environ['DATABASE_URL']
+DATABASE_URL = os.environ['DATABASE_URL']
 
 DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 

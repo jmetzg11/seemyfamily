@@ -39,10 +39,14 @@ Production is a single Go binary with no Python in it, so migrations to the prod
 database are applied by the Django admin running locally:
 
 ```
-make admin-prod    # not built yet
+make admin-prod
 ```
 
-This also gives you a way to curate and view prod content. It is a separate target
-from `run` so that `loaddata` can never execute against real data. It will prompt
-for the database and storage connection strings rather than reading them from a file.
+It runs `migrate`, then the Django admin on 8000 and the app on 4000, both pointed at
+prod, so it doubles as a way to curate and view real content. It is a separate target
+from `run` so that `loaddata` can never execute against real data.
+
+Connection details come from `.env.prod`, which holds the same keys as `.env` pointed
+at Supabase instead of docker. It is gitignored, and `admin-prod` refuses to start
+without it rather than falling back to the local database.
 

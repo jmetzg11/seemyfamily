@@ -16,9 +16,12 @@ run:
 	air
 
 admin-prod:
-	@echo "TODO: prompt for the prod database and storage connection strings,"
-	@echo "then run migrate and the Django admin against prod. Never loaddata."
-	@exit 1
+	@test -f .env.prod || { echo "admin-prod: .env.prod is missing"; exit 1; }
+	@trap 'pkill -f "[m]anage.py runserver" >/dev/null 2>&1 || true' EXIT; \
+	set -a; . ./.env.prod; set +a; \
+	(cd admin && uv run python manage.py migrate) || exit 1; \
+	(cd admin && uv run python manage.py runserver 8000 &); \
+	go run ./cmd/web
 
 down:
 	@pkill -f '[t]mp/web' 2>/dev/null || true
