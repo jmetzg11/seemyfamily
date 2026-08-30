@@ -1,4 +1,4 @@
-.PHONY: run down admin-prod hooks
+.PHONY: run down admin-prod shellplus hooks
 
 hooks:
 	@chmod +x .githooks/*
@@ -22,6 +22,12 @@ admin-prod:
 	(cd admin && uv run python manage.py migrate) || exit 1; \
 	(cd admin && uv run python manage.py runserver 8000 &); \
 	go run ./cmd/web
+
+shellplus:
+	@pid=$$(pgrep -f '[m]anage.py runserver' | head -1); \
+	test -n "$$pid" || { echo "shellplus: no admin server running; start 'make run' or 'make admin-prod' first"; exit 1; }; \
+	export DATABASE_URL=$$(tr '\0' '\n' </proc/$$pid/environ | sed -n 's/^DATABASE_URL=//p'); \
+	cd admin && uv run python manage.py shell
 
 down:
 	@pkill -f '[t]mp/web' 2>/dev/null || true

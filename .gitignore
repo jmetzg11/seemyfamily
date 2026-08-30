@@ -16,4 +16,5 @@ media/photos/*
 !media/photos/seed-*.png
 
 notes.txt
+notes.py
 PLAN.md
