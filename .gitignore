@@ -18,3 +18,5 @@ media/photos/*
 notes.txt
 notes.py
 PLAN.md
+
+.backup_data/

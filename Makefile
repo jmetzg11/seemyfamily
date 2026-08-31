@@ -32,5 +32,4 @@ shellplus:
 down:
 	@pkill -f '[t]mp/web' 2>/dev/null || true
 	@pkill -f '[m]anage.py runserver' 2>/dev/null || true
-	@docker compose down -v 
-	
+	@docker compose down -v

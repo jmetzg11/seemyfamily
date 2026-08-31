@@ -10,8 +10,7 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /web ./cmd/web
 
 FROM alpine:3.21
 
-RUN apk add --no-cache ca-certificates
-
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /web /usr/local/bin/web
 
 EXPOSE 4000

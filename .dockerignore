@@ -1,6 +1,6 @@
 .git
 .githooks
-**/.env
+**/.env*
 tmp
 admin
 media
@@ -8,4 +8,4 @@ docker-compose.yml
 fly.toml
 Makefile
 README.md
-notes.txt
+notes.*
