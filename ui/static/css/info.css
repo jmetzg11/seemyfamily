@@ -1,0 +1,35 @@
+.edits h2 {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.75rem;
+}
+
+table.history {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 720px;
+    font-size: 0.9rem;
+}
+
+table.history th {
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding: 0.4rem 0.6rem;
+}
+
+table.history td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+}
+
+table.history tbody tr:nth-child(odd) {
+    background: var(--stripe);
+}

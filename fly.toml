@@ -1,16 +1,11 @@
-# fly.toml app configuration file generated for backend-small-surf-1752 on 2024-10-15T04:56:13-07:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
-app = 'backend-small-surf-1752'
-primary_region = 'atl'
+app = 'seemyfamily'
+primary_region = 'iad'
 
 [build]
-  dockerfile = './Dockerfile.prod'
+  dockerfile = './Dockerfile'
 
 [http_service]
-  internal_port = 8000
+  internal_port = 4000
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
@@ -21,7 +16,3 @@ primary_region = 'atl'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
-
-[mounts]
-  source = "media_volume"
-  destination = "/app/media"

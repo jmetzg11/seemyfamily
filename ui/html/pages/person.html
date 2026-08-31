@@ -1,0 +1,48 @@
+{{define "title"}}{{.Person.Name}}{{end}}
+
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/person.css" />
+{{end}}
+
+{{define "main"}}
+<header class="profile-head">
+    <img class="portrait rot-{{.Person.Rotation}}" src="{{.MediaURL}}/{{.Person.Photo}}" alt="{{.Person.Name}}" />
+    <div>
+        <h1>{{.Person.Name}}</h1>
+        <dl class="facts">
+            {{if .Person.Birthyear}}<dt>Born</dt><dd>{{.Person.Birthyear}}</dd>{{end}}
+            {{if .Person.Birthplace}}<dt>Birthplace</dt><dd>{{.Person.Birthplace}}</dd>{{end}}
+            {{if .Person.Location}}<dt>Lives in</dt><dd>{{.Person.Location}}</dd>{{end}}
+        </dl>
+        <p class="profile-actions">
+            <a href="/person/{{.Person.ID}}/photos">Photos</a>
+            {{if .IsAuthenticated}}
+            <a href="/person/{{.Person.ID}}/edit">Edit details</a>
+            <a href="/person/{{.Person.ID}}/add">Add a relative</a>
+            <a href="/person/{{.Person.ID}}/relatives">Manage relatives</a>
+            {{end}}
+        </p>
+    </div>
+</header>
+
+{{if .Person.Bio}}<p class="bio">{{.Person.Bio}}</p>{{end}}
+
+{{range .Relations}}
+<section class="relations">
+    <h2>{{.Title}}</h2>
+    <ul class="cards">
+        {{range .People}}
+        <li>
+            <a href="/person/{{.ID}}">
+                <img class="avatar rot-{{.Rotation}}" src="{{$.MediaURL}}/{{.Photo}}" alt="" />
+                <span>{{.Name}}</span>
+                {{if .Birthyear}}<span class="card-year">{{.Birthyear}}</span>{{end}}
+            </a>
+        </li>
+        {{end}}
+    </ul>
+</section>
+{{else}}
+<p class="empty">No relatives recorded.</p>
+{{end}}
+{{end}}

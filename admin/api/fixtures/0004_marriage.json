@@ -1,0 +1,42 @@
+[
+  {
+    "model": "api.marriage",
+    "pk": 1,
+    "fields": {
+      "person_a": 1,
+      "person_b": 2
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 2,
+    "fields": {
+      "person_a": 3,
+      "person_b": 4
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 3,
+    "fields": {
+      "person_a": 3,
+      "person_b": 5
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 4,
+    "fields": {
+      "person_a": 5,
+      "person_b": 6
+    }
+  },
+  {
+    "model": "api.marriage",
+    "pk": 5,
+    "fields": {
+      "person_a": 7,
+      "person_b": 11
+    }
+  }
+]

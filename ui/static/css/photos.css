@@ -1,0 +1,89 @@
+.gallery-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.gallery-head h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.gallery-head a {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.gallery {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.gallery li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+.gallery img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 3px;
+    cursor: zoom-in;
+}
+
+.viewer {
+    border: none;
+    padding: 0;
+    background: none;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    overflow: hidden;
+}
+
+.viewer[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.viewer::backdrop {
+    background: rgb(0 0 0 / 0.8);
+}
+
+.viewer img {
+    display: block;
+    max-width: 92vw;
+    max-height: 92vh;
+    cursor: zoom-out;
+}
+
+.viewer img.rot-1,
+.viewer img.rot-3 {
+    max-width: 92vh;
+    max-height: 92vw;
+}
+
+.caption {
+    font-size: 0.9rem;
+}
+
+.badge {
+    align-self: flex-start;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+}

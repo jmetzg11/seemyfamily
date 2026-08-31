@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: seemyfamily
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: donkey6
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d seemyfamily"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  storage:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: seemyfamily
+      MINIO_ROOT_PASSWORD: donkey6donkey6
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+
+  createbucket:
+    image: minio/mc
+    depends_on:
+      - storage
+    volumes:
+      - ./media/photos:/seed:ro
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://storage:9000 seemyfamily donkey6donkey6; do sleep 1; done;
+      mc mb --ignore-existing local/photos;
+      mc anonymous set download local/photos;
+      mc mirror --overwrite /seed local/photos;
+      "
+
+volumes:
+  pgdata:
+  miniodata:

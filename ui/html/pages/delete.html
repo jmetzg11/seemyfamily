@@ -1,0 +1,30 @@
+{{define "title"}}Delete {{.Person.Name}}{{end}}
+
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/form.css" />
+{{end}}
+
+{{define "main"}}
+<form class="record" method="POST" action="/person/{{.Person.ID}}/delete">
+    <h1>Delete {{.Person.Name}}?</h1>
+
+    <p class="warning">This cannot be undone. Their photos and their place on the
+    map go too.</p>
+
+    {{if .Relations}}
+    <p>{{.Person.Name}} will be unlinked from:</p>
+    <ul class="losing">
+        {{range .Relations}}
+        <li>{{.Title}} &mdash; {{range $i, $p := .People}}{{if $i}}, {{end}}{{$p.Name}}{{end}}</li>
+        {{end}}
+    </ul>
+    <p class="warning">Anyone whose only link ran through {{.Person.Name}} will
+    no longer show as related.</p>
+    {{end}}
+
+    <div class="form-actions">
+        <button class="danger" type="submit">Delete {{.Person.Name}}</button>
+        <a href="/person/{{.Person.ID}}">Cancel</a>
+    </div>
+</form>
+{{end}}

@@ -1,0 +1,98 @@
+[
+  {
+    "model": "api.parentchild",
+    "pk": 1,
+    "fields": {
+      "parent": 2,
+      "child": 3
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 2,
+    "fields": {
+      "parent": 1,
+      "child": 3
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 3,
+    "fields": {
+      "parent": 3,
+      "child": 7
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 4,
+    "fields": {
+      "parent": 4,
+      "child": 7
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 5,
+    "fields": {
+      "parent": 3,
+      "child": 8
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 6,
+    "fields": {
+      "parent": 4,
+      "child": 8
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 7,
+    "fields": {
+      "parent": 3,
+      "child": 9
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 8,
+    "fields": {
+      "parent": 5,
+      "child": 9
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 9,
+    "fields": {
+      "parent": 5,
+      "child": 10
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 10,
+    "fields": {
+      "parent": 6,
+      "child": 10
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 11,
+    "fields": {
+      "parent": 7,
+      "child": 12
+    }
+  },
+  {
+    "model": "api.parentchild",
+    "pk": 12,
+    "fields": {
+      "parent": 11,
+      "child": 12
+    }
+  }
+]

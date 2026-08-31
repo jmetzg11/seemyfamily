@@ -1,0 +1,145 @@
+[
+  {
+    "model": "api.photo",
+    "pk": 1,
+    "fields": {
+      "person": 1,
+      "description": "Portrait",
+      "file_path": "seed-mira.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 2,
+    "fields": {
+      "person": 2,
+      "description": "Portrait",
+      "file_path": "seed-otto.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 3,
+    "fields": {
+      "person": 3,
+      "description": "Portrait",
+      "file_path": "seed-boris.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 4,
+    "fields": {
+      "person": 4,
+      "description": "Portrait",
+      "file_path": "seed-ada.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 5,
+    "fields": {
+      "person": 5,
+      "description": "Portrait",
+      "file_path": "seed-elena.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 6,
+    "fields": {
+      "person": 6,
+      "description": "Portrait",
+      "file_path": "seed-pavel.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 7,
+    "fields": {
+      "person": 7,
+      "description": "At the coast",
+      "file_path": "seed-cleo.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 8,
+    "fields": {
+      "person": 7,
+      "description": null,
+      "file_path": "seed-cleo-alt.png",
+      "profile_pic": false,
+      "rotation": 1
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 9,
+    "fields": {
+      "person": 8,
+      "description": "Portrait",
+      "file_path": "seed-dmitri.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 10,
+    "fields": {
+      "person": 9,
+      "description": "Portrait",
+      "file_path": "seed-fyodor.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 11,
+    "fields": {
+      "person": 10,
+      "description": "Portrait",
+      "file_path": "seed-greta.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 12,
+    "fields": {
+      "person": 11,
+      "description": "Portrait",
+      "file_path": "seed-marko.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  },
+  {
+    "model": "api.photo",
+    "pk": 13,
+    "fields": {
+      "person": 12,
+      "description": "Portrait",
+      "file_path": "seed-nils.png",
+      "profile_pic": true,
+      "rotation": 0
+    }
+  }
+]

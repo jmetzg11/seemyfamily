@@ -1,0 +1,56 @@
+{{define "title"}}Photos of {{.Person.Name}}{{end}}
+
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/form.css" />
+<link rel="stylesheet" href="/static/css/photos.css" />
+{{end}}
+
+{{define "main"}}
+<header class="gallery-head">
+    <h1>Photos of {{.Person.Name}}</h1>
+    <a href="/person/{{.Person.ID}}">Back to profile</a>
+</header>
+
+{{if .Photos}}
+<ul class="gallery">
+    {{range .Photos}}
+    <li>
+        <img class="rot-{{.Rotation}}" src="{{$.MediaURL}}/{{.Path}}" alt="{{.Description}}" />
+        {{if .Description}}<span class="caption">{{.Description}}</span>{{end}}
+        {{if .ProfilePic}}<span class="badge">Profile picture</span>{{end}}
+    </li>
+    {{end}}
+</ul>
+{{else}}
+<p class="empty">No photos yet.</p>
+{{end}}
+
+<dialog class="viewer">
+    <img alt="" />
+</dialog>
+
+{{if .IsAuthenticated}}
+<form class="record" method="POST" action="/person/{{.Person.ID}}/photos" enctype="multipart/form-data">
+    <h2>Add a photo</h2>
+
+    {{with .PhotoForm.Error}}<p class="field-error">{{.}}</p>{{end}}
+
+    <label for="photo">Photo</label>
+    <input id="photo" name="photo" type="file" accept="image/jpeg,image/png" required />
+
+    <label for="description">Description</label>
+    <input id="description" name="description" value="{{.PhotoForm.Description}}" />
+
+    <p class="warning">Large photos are shrunk to fit 800x800 and saved as JPEG.
+    JPEG and PNG only — iPhone photos saved as HEIC have to be converted first.</p>
+
+    <div class="form-actions">
+        <button type="submit">Upload</button>
+    </div>
+</form>
+{{end}}
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/js/photos.js"></script>
+{{end}}

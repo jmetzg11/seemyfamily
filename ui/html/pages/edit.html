@@ -1,0 +1,19 @@
+{{define "title"}}Edit {{.Person.Name}}{{end}}
+
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/form.css" />
+{{end}}
+
+{{define "main"}}
+<form class="record" method="POST" action="/person/{{.Person.ID}}/edit">
+    <h1>Edit profile</h1>
+
+    {{template "person-fields" .PersonForm}}
+
+    <div class="form-actions">
+        <button type="submit">Save</button>
+        <a href="/person/{{.Person.ID}}">Cancel</a>
+        <a class="danger" href="/person/{{.Person.ID}}/delete">Delete profile</a>
+    </div>
+</form>
+{{end}}

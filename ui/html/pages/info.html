@@ -1,0 +1,36 @@
+{{define "title"}}Info{{end}}
+
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/info.css" />
+{{end}}
+
+{{define "main"}}
+<section class="edits">
+    <h2>Recent edits</h2>
+
+    {{if .Edits}}
+    <table class="history">
+        <thead>
+            <tr>
+                <th>When</th>
+                <th>Who</th>
+                <th>Did</th>
+                <th>To</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Edits}}
+            <tr>
+                <td>{{.CreatedAt.Format "2006-01-02"}}</td>
+                <td>{{.Username}}</td>
+                <td>{{.Action}}</td>
+                <td>{{.Recipient}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    {{else}}
+    <p class="empty">Nothing recorded yet.</p>
+    {{end}}
+</section>
+{{end}}

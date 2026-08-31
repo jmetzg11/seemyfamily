@@ -1,0 +1,23 @@
+{{define "title"}}Sign in{{end}}
+
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/login.css" />
+{{end}}
+
+{{define "main"}}
+<form class="login" method="POST" action="/login">
+    <h1>Sign in</h1>
+
+    {{if .LoginForm.Error}}<p class="form-error">{{.LoginForm.Error}}</p>{{end}}
+
+    <input type="hidden" name="next" value="{{.LoginForm.Next}}" />
+
+    <label for="name">Username</label>
+    <input id="name" name="name" value="{{.LoginForm.Name}}" autocomplete="username" autofocus required />
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required />
+
+    <button type="submit">Sign in</button>
+</form>
+{{end}}

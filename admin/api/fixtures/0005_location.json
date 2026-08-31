@@ -1,0 +1,112 @@
+[
+  {
+    "model": "api.location",
+    "pk": 1,
+    "fields": {
+      "person": 1,
+      "name": "Lisbon, Portugal",
+      "lat": 38.7223,
+      "lng": -9.1393
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 2,
+    "fields": {
+      "person": 2,
+      "name": "Lisbon, Portugal",
+      "lat": 38.7223,
+      "lng": -9.1393
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 3,
+    "fields": {
+      "person": 3,
+      "name": "Belgrade, Serbia",
+      "lat": 44.7866,
+      "lng": 20.4489
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 4,
+    "fields": {
+      "person": 4,
+      "name": "Zagreb, Croatia",
+      "lat": 45.815,
+      "lng": 15.9819
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 5,
+    "fields": {
+      "person": 5,
+      "name": "Belgrade, Serbia",
+      "lat": 44.7866,
+      "lng": 20.4489
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 6,
+    "fields": {
+      "person": 7,
+      "name": "Austin, Texas",
+      "lat": 30.2672,
+      "lng": -97.7431
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 7,
+    "fields": {
+      "person": 8,
+      "name": "Austin, Texas",
+      "lat": 30.2672,
+      "lng": -97.7431
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 8,
+    "fields": {
+      "person": 9,
+      "name": "Berlin, Germany",
+      "lat": 52.52,
+      "lng": 13.405
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 9,
+    "fields": {
+      "person": 10,
+      "name": "Berlin, Germany",
+      "lat": 52.52,
+      "lng": 13.405
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 10,
+    "fields": {
+      "person": 11,
+      "name": "Austin, Texas",
+      "lat": 30.2672,
+      "lng": -97.7431
+    }
+  },
+  {
+    "model": "api.location",
+    "pk": 11,
+    "fields": {
+      "person": 12,
+      "name": "Austin, Texas",
+      "lat": 30.2672,
+      "lng": -97.7431
+    }
+  }
+]

@@ -1,0 +1,103 @@
+package main
+
+import (
+	"context"
+	"html/template"
+	"log/slog"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"seemyfamily.jmetzg11/internal/models"
+	"seemyfamily.jmetzg11/internal/storage"
+)
+
+type application struct {
+	logger        *slog.Logger
+	templateCache map[string]*template.Template
+	people        *models.PersonModel
+	users         *models.UserModel
+	stats         *models.InfoModel
+	photos        *models.PhotoModel
+	locations     *models.LocationModel
+	bucket        *storage.Client
+	csp           string
+	sessionSecret []byte
+	secureCookies bool
+}
+
+func main() {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	dsn := mustGetenv(logger, "DATABASE_URL")
+
+	bucket := &storage.Client{
+		Endpoint:  strings.TrimSuffix(mustGetenv(logger, "S3_ENDPOINT"), "/"),
+		PublicURL: strings.TrimSuffix(mustGetenv(logger, "S3_PUBLIC_URL"), "/"),
+		Region:    mustGetenv(logger, "S3_REGION"),
+		Bucket:    mustGetenv(logger, "S3_BUCKET"),
+		AccessKey: mustGetenv(logger, "S3_ACCESS_KEY"),
+		SecretKey: mustGetenv(logger, "S3_SECRET_KEY"),
+	}
+
+	sessionSecret := os.Getenv("SESSION_SECRET")
+	if len(sessionSecret) < 32 {
+		logger.Error("SESSION_SECRET is not set, or is shorter than 32 characters")
+		os.Exit(1)
+	}
+
+	secureCookies := os.Getenv("SECURE_COOKIES") != "false"
+
+	pool, err := pgxpool.New(context.Background(), dsn)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	defer pool.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = pool.Ping(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	app := &application{
+		logger:        logger,
+		templateCache: templateCache,
+		people:        &models.PersonModel{DB: pool},
+		users:         &models.UserModel{DB: pool},
+		stats:         &models.InfoModel{DB: pool},
+		photos:        &models.PhotoModel{DB: pool},
+		locations:     &models.LocationModel{DB: pool},
+		bucket:        bucket,
+		csp:           buildCSP(bucket.PublicURL),
+		sessionSecret: []byte(sessionSecret),
+		secureCookies: secureCookies,
+	}
+
+	srv := &http.Server{
+		Addr:              ":4000",
+		Handler:           app.routes(),
+		ErrorLog:          slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      10 * time.Second,
+	}
+
+	logger.Info("starting server", "addr", srv.Addr)
+
+	err = srv.ListenAndServe()
+	logger.Error(err.Error())
+	os.Exit(1)
+}
