@@ -1,5 +1,7 @@
 import os
+import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 import dj_database_url
 from dotenv import load_dotenv
@@ -56,6 +58,23 @@ DATABASE_URL = os.environ['DATABASE_URL']
 DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 
 print(f'[admin] database: {DATABASE_URL.rsplit("@", 1)[-1]}')
+
+# load_dotenv() will not override an already-exported DATABASE_URL, so any
+# shell that has sourced .env.prod points manage.py at Prod DB. These
+# commands overwrite or delete rows -- and the fixtures carry explicit primary
+# keys, so loaddata would clobber the real people sitting on ids 1-12.
+LOCAL_DB_HOSTS = {'localhost', '127.0.0.1', '::1', 'db'}
+DESTRUCTIVE_COMMANDS = {'loaddata', 'flush', 'sqlflush'}
+
+_command = sys.argv[1] if len(sys.argv) > 1 else ''
+_db_host = urlparse(DATABASE_URL).hostname or ''
+
+if _command in DESTRUCTIVE_COMMANDS and _db_host not in LOCAL_DB_HOSTS:
+    raise SystemExit(
+        f'\n[admin] refusing to run "{_command}" against non-local database '
+        f'host "{_db_host}".\n'
+        f'        Source .env (local), not .env.prod.\n'
+    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
