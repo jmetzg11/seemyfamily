@@ -29,7 +29,8 @@
       "birthyear": 1962,
       "birthplace": "Lisbon, Portugal",
       "bio": "Structural engineer. Married twice.",
-      "owners": [2]
+      "owners": [2],
+      "user": 2
     }
   },
   {
@@ -62,7 +63,8 @@
       "birthyear": 1965,
       "birthplace": "Novi Sad, Serbia",
       "bio": null,
-      "owners": [3]
+      "owners": [3],
+      "user": 3
     }
   },
   {

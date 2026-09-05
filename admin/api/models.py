@@ -16,6 +16,14 @@ class Person(models.Model):
         related_name='owned',
         blank=True,
     )
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        related_name='person',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        help_text='The account this person logs in with, if they have one.',
+    )
 
     class Meta:
         ordering: ClassVar[list[str]] = ['name']

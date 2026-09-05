@@ -21,9 +21,9 @@
     "model": "auth.user",
     "pk": 2,
     "fields": {
-      "username": "vance",
+      "username": "Boris",
       "email": "",
-      "password": "pbkdf2_sha256$1500000$ruOy0VCfmv8fbe0SPNaO6W$X4cCFW97SVstPjoILsYwuFTZ05FrZVOwbSes+Hj3Y8o=",
+      "password": "pbkdf2_sha256$1500000$rtbIKKmgq1jgWOzdfsTN1M$ZyvyR18AsuEOwZVjiivMkb9Z7ymMCeJRHlvZmBSAstU=",
       "first_name": "",
       "last_name": "",
       "is_superuser": false,
@@ -39,9 +39,9 @@
     "model": "auth.user",
     "pk": 3,
     "fields": {
-      "username": "roth",
+      "username": "Pavel",
       "email": "",
-      "password": "pbkdf2_sha256$1500000$BTX5QFS2bCPq3eWlH3rSi6$JqXqho6W6ld+miDiWA4MTOEMYtsPIWmjkqkVjagdwfI=",
+      "password": "pbkdf2_sha256$1500000$oGTBMzpimDu3aBDpG4kMKq$WyfzDfVmFAdVRFVFVN7yXyVwAFsh4WU//bz9OUz51Xw=",
       "first_name": "",
       "last_name": "",
       "is_superuser": false,

@@ -21,8 +21,8 @@ The fixtures ship three accounts, each password the same as its username:
 | username | password | |
 |---|---|---|
 | `admin` | `admin` | superuser, can reach the Django admin |
-| `vance` | `vance` | owns the Vance branch |
-| `roth` | `roth` | owns the Roth branch |
+| `Boris` | `Boris` | owns the Vance branch |
+| `Pavel` | `Pavel` | owns the Roth branch |
 
 
 Needs docker, [uv](https://docs.astral.sh/uv/), and [air](https://github.com/air-verse/air).
