@@ -12,7 +12,7 @@ Makefile picks it up with no change.
 
 | File | Model | Rows | Holds |
 | --- | --- | --- | --- |
-| `0001_user.json` | `auth.user` | 2 | The `admin` superuser and an ordinary `guest` user. Passwords are hashed here; the root README has the plaintext. |
+| `0001_user.json` | `auth.user` | 3 | The `admin` superuser plus `vance` and `roth`, the two ordinary users who own the people. Passwords are hashed here; the root README has the plaintext. |
 | `0002_person.json` | `api.person` | 12 | The people themselves. Everything else hangs off these primary keys. |
 | `0003_parentchild.json` | `api.parentchild` | 12 | One row per parent→child edge, so a child with two known parents has two rows. |
 | `0004_marriage.json` | `api.marriage` | 5 | Spouse pairs, unordered in meaning but stored canonically. |

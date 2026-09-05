@@ -21,9 +21,27 @@
     "model": "auth.user",
     "pk": 2,
     "fields": {
-      "username": "guest",
+      "username": "vance",
       "email": "",
-      "password": "pbkdf2_sha256$1500000$bFB6pZVMgh6Zo7yPv8VvAn$2GrjnMJiy6PKnlJylr53LopAFUmHvhFR3jSkx7rzYM4=",
+      "password": "pbkdf2_sha256$1500000$ruOy0VCfmv8fbe0SPNaO6W$X4cCFW97SVstPjoILsYwuFTZ05FrZVOwbSes+Hj3Y8o=",
+      "first_name": "",
+      "last_name": "",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "last_login": null,
+      "date_joined": "2026-01-01T00:00:00Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "username": "roth",
+      "email": "",
+      "password": "pbkdf2_sha256$1500000$BTX5QFS2bCPq3eWlH3rSi6$JqXqho6W6ld+miDiWA4MTOEMYtsPIWmjkqkVjagdwfI=",
       "first_name": "",
       "last_name": "",
       "is_superuser": false,

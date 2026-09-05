@@ -1,3 +1,6 @@
+from typing import ClassVar
+
+from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
 from django.utils import timezone
@@ -8,12 +11,17 @@ class Person(models.Model):
     birthyear = models.PositiveIntegerField(blank=True, null=True)
     birthplace = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
+    owners = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='owned',
+        blank=True,
+    )
 
     class Meta:
-        ordering = ['name']
+        ordering: ClassVar[list[str]] = ['name']
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class ParentChild(models.Model):
@@ -21,7 +29,7 @@ class ParentChild(models.Model):
     child = models.ForeignKey(Person, related_name='parent_links', on_delete=models.CASCADE)
 
     class Meta:
-        constraints = [
+        constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(fields=['parent', 'child'], name='unique_parent_child'),
             models.CheckConstraint(condition=~Q(parent=F('child')), name='parent_is_not_child'),
         ]
@@ -35,7 +43,7 @@ class Marriage(models.Model):
     person_b = models.ForeignKey(Person, related_name='marriages_as_b', on_delete=models.CASCADE)
 
     class Meta:
-        constraints = [
+        constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(fields=['person_a', 'person_b'], name='unique_marriage'),
             models.CheckConstraint(condition=Q(person_a__lt=F('person_b')), name='marriage_canonical_order'),
         ]
@@ -80,8 +88,8 @@ class History(models.Model):
     recipient = models.CharField(max_length=100)
 
     class Meta:
-        ordering = ['-created_at']
-        indexes = [models.Index(fields=['-created_at'])]
+        ordering: ClassVar[list[str]] = ['-created_at']
+        indexes: ClassVar[list[models.Index]] = [models.Index(fields=['-created_at'])]
 
     def __str__(self):
         return f'{self.username} {self.action} {self.recipient}'

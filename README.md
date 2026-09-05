@@ -16,12 +16,14 @@ make down    # stop everything
 | admin | http://localhost:8000/admin |
 | minio | http://localhost:9001 — `seemyfamily` / `donkey6donkey6` |
 
-The fixtures ship two accounts:
+The fixtures ship three accounts, each password the same as its username:
 
 | username | password | |
 |---|---|---|
 | `admin` | `admin` | superuser, can reach the Django admin |
-| `guest` | `guest` | ordinary app user |
+| `vance` | `vance` | owns the Vance branch |
+| `roth` | `roth` | owns the Roth branch |
+
 
 Needs docker, [uv](https://docs.astral.sh/uv/), and [air](https://github.com/air-verse/air).
 
