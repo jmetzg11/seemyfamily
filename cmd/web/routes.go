@@ -25,16 +25,20 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("POST /login", app.login)
 	mux.HandleFunc("POST /logout", app.logout)
 
-	mux.Handle("GET /person/{id}/edit", app.requireAuth(http.HandlerFunc(app.editForm)))
-	mux.Handle("POST /person/{id}/edit", app.requireAuth(http.HandlerFunc(app.edit)))
-	mux.Handle("GET /person/{id}/add", app.requireAuth(http.HandlerFunc(app.addRelativeForm)))
-	mux.Handle("POST /person/{id}/add", app.requireAuth(http.HandlerFunc(app.addRelative)))
-	mux.Handle("GET /person/{id}/delete", app.requireAuth(http.HandlerFunc(app.deleteForm)))
-	mux.Handle("POST /person/{id}/delete", app.requireAuth(http.HandlerFunc(app.delete)))
-	mux.Handle("POST /person/{id}/photos", app.requireAuth(http.HandlerFunc(app.upload)))
-	mux.Handle("GET /person/{id}/relatives", app.requireAuth(http.HandlerFunc(app.relatives)))
-	mux.Handle("POST /person/{id}/relatives/link", app.requireAuth(http.HandlerFunc(app.link)))
-	mux.Handle("POST /person/{id}/relatives/unlink", app.requireAuth(http.HandlerFunc(app.unlink)))
+	owner := func(h http.HandlerFunc) http.Handler {
+		return app.requireAuth(app.requireOwner(h))
+	}
+
+	mux.Handle("GET /person/{id}/edit", owner(app.editForm))
+	mux.Handle("POST /person/{id}/edit", owner(app.edit))
+	mux.Handle("GET /person/{id}/add", owner(app.addRelativeForm))
+	mux.Handle("POST /person/{id}/add", owner(app.addRelative))
+	mux.Handle("GET /person/{id}/delete", owner(app.deleteForm))
+	mux.Handle("POST /person/{id}/delete", owner(app.delete))
+	mux.Handle("POST /person/{id}/photos", owner(app.upload))
+	mux.Handle("GET /person/{id}/relatives", owner(app.relatives))
+	mux.Handle("POST /person/{id}/relatives/link", owner(app.link))
+	mux.Handle("POST /person/{id}/relatives/unlink", owner(app.unlink))
 
 	mux.Handle("GET /info", app.requireAuth(http.HandlerFunc(app.info)))
 

@@ -86,10 +86,17 @@ func (app *application) person(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	canEdit, err := app.canEdit(r, id)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
 	data := app.newTemplateData(r)
 	data.Page = "person"
 	data.Person = person
 	data.Relations = relations
+	data.CanEdit = canEdit
 
 	app.render(w, r, http.StatusOK, "person.html", data)
 }

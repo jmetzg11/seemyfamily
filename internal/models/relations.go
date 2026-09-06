@@ -205,6 +205,10 @@ SELECT parent_id, $2
 FROM api_parentchild
 WHERE child_id = $1`
 
+const insertOwnerQuery = `
+INSERT INTO api_person_owners (person_id, user_id)
+VALUES ($1, $2)`
+
 const insertUnknownParentQuery = `
 INSERT INTO api_person (name)
 SELECT left('Unknown parent of ' || name, 255)
@@ -212,10 +216,15 @@ FROM api_person
 WHERE id = $1
 RETURNING id`
 
-func linkUnknownParent(ctx context.Context, tx pgx.Tx, siblings ...int) error {
+func linkUnknownParent(ctx context.Context, tx pgx.Tx, ownerID int, siblings ...int) error {
 	var parentID int
 
 	err := tx.QueryRow(ctx, insertUnknownParentQuery, siblings[0]).Scan(&parentID)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, insertOwnerQuery, parentID, ownerID)
 	if err != nil {
 		return err
 	}
@@ -230,7 +239,7 @@ func linkUnknownParent(ctx context.Context, tx pgx.Tx, siblings ...int) error {
 	return nil
 }
 
-func (m *PersonModel) AddRelative(ctx context.Context, p Person, relativeID int, relation, username string) error {
+func (m *PersonModel) AddRelative(ctx context.Context, p Person, relativeID, ownerID int, relation, username string) error {
 	tx, err := m.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -262,11 +271,16 @@ func (m *PersonModel) AddRelative(ctx context.Context, p Person, relativeID int,
 		var tag pgconn.CommandTag
 		tag, err = tx.Exec(ctx, copyParentsQuery, relativeID, id)
 		if err == nil && tag.RowsAffected() == 0 {
-			err = linkUnknownParent(ctx, tx, relativeID, id)
+			err = linkUnknownParent(ctx, tx, ownerID, relativeID, id)
 		}
 	default:
 		return fmt.Errorf("models: unknown relation %q", relation)
 	}
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, insertOwnerQuery, id, ownerID)
 	if err != nil {
 		return err
 	}

@@ -31,11 +31,18 @@ func (app *application) renderPhotos(w http.ResponseWriter, r *http.Request, id 
 		return
 	}
 
+	canEdit, err := app.canEdit(r, id)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
 	data := app.newTemplateData(r)
 	data.Page = "person"
 	data.Person = person
 	data.Photos = photos
 	data.PhotoForm = form
+	data.CanEdit = canEdit
 
 	app.render(w, r, status, "photos.html", data)
 }

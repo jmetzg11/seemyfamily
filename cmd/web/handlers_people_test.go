@@ -351,6 +351,47 @@ func TestPersonRendersProfileAndRelations(t *testing.T) {
 	hpAssertBody(t, w, `href="/person/`+strconv.Itoa(childID)+`"`, "the child card links onward")
 }
 
+func TestPersonShowsEditingOnlyToOwners(t *testing.T) {
+	app := newTestApp(t)
+
+	ownerID, ownerName := haNewUser(t, app)
+	strangerID, strangerName := haNewUser(t, app)
+
+	id := newTestPerson(t, app)
+	mwGiveOwner(t, app, id, ownerID)
+
+	path := "/person/" + strconv.Itoa(id) + "/edit"
+
+	tests := []struct {
+		name string
+		user *models.User
+		want bool
+	}{
+		{"owner", &models.User{ID: ownerID, Name: ownerName}, true},
+		{"signed in, not the owner", &models.User{ID: strangerID, Name: strangerName}, false},
+		{"signed out", nil, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodGet, "/person/"+strconv.Itoa(id), nil)
+			r.SetPathValue("id", strconv.Itoa(id))
+			if tt.user != nil {
+				r = requestWithUser(r, *tt.user)
+			}
+
+			w := httptest.NewRecorder()
+			app.person(w, r)
+
+			hpAssertStatus(t, w, http.StatusOK)
+
+			if got := strings.Contains(w.Body.String(), path); got != tt.want {
+				t.Errorf("got edit link present = %v; want %v — the buttons must match what requireOwner allows", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestPersonWithoutRelations(t *testing.T) {
 	app := newTestApp(t)
 	id := newTestPerson(t, app)

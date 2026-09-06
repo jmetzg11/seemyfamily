@@ -16,6 +16,7 @@ type templateData struct {
 	MediaURL        string
 	UserName        string
 	IsAuthenticated bool
+	CanEdit         bool
 
 	LoginForm    loginForm
 	PersonForm   personForm

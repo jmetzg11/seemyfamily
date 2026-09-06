@@ -53,6 +53,7 @@ func newTestPerson(t *testing.T, pool *pgxpool.Pool) (int, string) {
 			`DELETE FROM api_marriage WHERE person_a_id = $1 OR person_b_id = $1`,
 			`DELETE FROM api_location WHERE person_id = $1`,
 			`DELETE FROM api_photo WHERE person_id = $1`,
+			`DELETE FROM api_person_owners WHERE person_id = $1`,
 			`DELETE FROM api_person WHERE id = $1`,
 		}
 
@@ -330,6 +331,52 @@ func TestPersonGet(t *testing.T) {
 		_, err := model.Get(ctx, -1)
 		if !errors.Is(err, ErrNoRecord) {
 			t.Errorf("got %v; want %v", err, ErrNoRecord)
+		}
+	})
+}
+
+func TestPersonIsOwner(t *testing.T) {
+	pool := newTestPool(t)
+	ctx := context.Background()
+	m := &PersonModel{DB: pool}
+
+	personID, _ := newTestPerson(t, pool)
+	ownerID := relOwner(t, pool)
+	strangerID := relOwner(t, pool)
+
+	relGiveOwner(t, pool, personID, ownerID)
+
+	t.Run("owner", func(t *testing.T) {
+		got, err := m.IsOwner(ctx, personID, ownerID)
+		if err != nil {
+			t.Fatalf("got error %v; want nil", err)
+		}
+		if !got {
+			t.Error("got false; want true for the account in api_person_owners")
+		}
+	})
+
+	t.Run("someone else", func(t *testing.T) {
+		got, err := m.IsOwner(ctx, personID, strangerID)
+		if err != nil {
+			t.Fatalf("got error %v; want nil", err)
+		}
+		if got {
+			t.Error("got true; want false, an account with no row must not own anyone")
+		}
+	})
+
+	t.Run("missing person", func(t *testing.T) {
+		var missingID int
+
+		err := pool.QueryRow(ctx, `SELECT coalesce(max(id), 0) + 1000 FROM api_person`).Scan(&missingID)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_, err = m.IsOwner(ctx, missingID, ownerID)
+		if !errors.Is(err, ErrNoRecord) {
+			t.Errorf("got %v; want ErrNoRecord, so a caller can answer 404 instead of 403", err)
 		}
 	})
 }

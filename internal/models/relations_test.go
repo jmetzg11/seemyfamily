@@ -18,6 +18,61 @@ func relModel(pool *pgxpool.Pool) *PersonModel {
 	return &PersonModel{DB: pool}
 }
 
+// relOwner is an account to hang new people off. api_person_owners has a
+// foreign key to auth_user, so a made-up id will not do.
+func relOwner(t *testing.T, pool *pgxpool.Pool) int {
+	t.Helper()
+
+	id, _ := userInsertAccount(t, pool, adminHash, false, true)
+
+	// Registered after userInsertAccount's own cleanup, so it runs before it:
+	// the account cannot go while it still owns anyone.
+	t.Cleanup(func() {
+		_, err := pool.Exec(context.Background(), `DELETE FROM api_person_owners WHERE user_id = $1`, id)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	return id
+}
+
+func relGiveOwner(t *testing.T, pool *pgxpool.Pool, personID, userID int) {
+	t.Helper()
+
+	_, err := pool.Exec(context.Background(),
+		`INSERT INTO api_person_owners (person_id, user_id) VALUES ($1, $2)`, personID, userID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func relOwnerIDs(t *testing.T, pool *pgxpool.Pool, personID int) []int {
+	t.Helper()
+
+	rows, err := pool.Query(context.Background(),
+		`SELECT user_id FROM api_person_owners WHERE person_id = $1 ORDER BY user_id`, personID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+
+	var ids []int
+
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		ids = append(ids, id)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+
+	return ids
+}
+
 func relUnique(prefix string) string {
 	return fmt.Sprintf("%s %d-%d", prefix, time.Now().UnixNano(), relCounter.Add(1))
 }
@@ -40,6 +95,7 @@ func relCleanupName(t *testing.T, pool *pgxpool.Pool, name string) {
 				`DELETE FROM api_marriage WHERE person_a_id = $1 OR person_b_id = $1`,
 				`DELETE FROM api_location WHERE person_id = $1`,
 				`DELETE FROM api_photo WHERE person_id = $1`,
+				`DELETE FROM api_person_owners WHERE person_id = $1`,
 				`DELETE FROM api_person WHERE id = $1`,
 			}
 			for _, query := range queries {
@@ -588,7 +644,7 @@ func TestAddRelativeCreatesAndLinks(t *testing.T) {
 			name := relName(t, pool, "Rel Added")
 
 			p := Person{Summary: Summary{Name: name, Birthyear: 1955}, Birthplace: "Berlin", Bio: "a life"}
-			err := m.AddRelative(ctx, p, subjectID, tt.relation, testUser)
+			err := m.AddRelative(ctx, p, subjectID, relOwner(t, pool), tt.relation, testUser)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -629,7 +685,7 @@ func TestAddRelativeSiblingCopiesParents(t *testing.T) {
 
 	name := relName(t, pool, "Rel Added Sibling")
 
-	err := m.AddRelative(ctx, Person{Summary: Summary{Name: name}}, subjectID, "sibling", testUser)
+	err := m.AddRelative(ctx, Person{Summary: Summary{Name: name}}, subjectID, relOwner(t, pool), "sibling", testUser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -674,7 +730,7 @@ func TestAddRelativeSiblingCreatesUnknownParent(t *testing.T) {
 	placeholder := "Unknown parent of " + subjectName
 	relCleanupName(t, pool, placeholder)
 
-	err := m.AddRelative(ctx, Person{Summary: Summary{Name: name}}, subjectID, "sibling", testUser)
+	err := m.AddRelative(ctx, Person{Summary: Summary{Name: name}}, subjectID, relOwner(t, pool), "sibling", testUser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -707,6 +763,66 @@ func TestAddRelativeSiblingCreatesUnknownParent(t *testing.T) {
 	}
 }
 
+func TestAddRelativeOwnershipGoesToTheCreatorAlone(t *testing.T) {
+	pool := newTestPool(t)
+	ctx := context.Background()
+	m := relModel(pool)
+
+	subjectID, _ := newTestPerson(t, pool)
+	creatorID := relOwner(t, pool)
+	sharerID := relOwner(t, pool)
+
+	// The subject is shared. The new person must not be.
+	relGiveOwner(t, pool, subjectID, creatorID)
+	relGiveOwner(t, pool, subjectID, sharerID)
+
+	name := relName(t, pool, "Rel Added Owned")
+
+	err := m.AddRelative(ctx, Person{Summary: Summary{Name: name}}, subjectID, creatorID, "child", testUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newID, ok := relPersonID(t, pool, name)
+	if !ok {
+		t.Fatalf("got no person named %q; want one", name)
+	}
+
+	got := relOwnerIDs(t, pool, newID)
+	if fmt.Sprint(got) != fmt.Sprint([]int{creatorID}) {
+		t.Errorf("got owners %v; want just the creator %d — the subject's co-owner must not come along",
+			got, creatorID)
+	}
+}
+
+func TestAddRelativeSiblingOwnsThePlaceholderParent(t *testing.T) {
+	pool := newTestPool(t)
+	ctx := context.Background()
+	m := relModel(pool)
+
+	subjectID, subjectName := newTestPerson(t, pool)
+	creatorID := relOwner(t, pool)
+	name := relName(t, pool, "Rel Added Orphan Owned")
+	placeholder := "Unknown parent of " + subjectName
+	relCleanupName(t, pool, placeholder)
+
+	err := m.AddRelative(ctx, Person{Summary: Summary{Name: name}}, subjectID, creatorID, "sibling", testUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	placeholderID, ok := relPersonID(t, pool, placeholder)
+	if !ok {
+		t.Fatalf("got no person named %q; want the placeholder parent", placeholder)
+	}
+
+	got := relOwnerIDs(t, pool, placeholderID)
+	if fmt.Sprint(got) != fmt.Sprint([]int{creatorID}) {
+		t.Errorf("got owners %v; want the creator %d — an invented person nobody owns cannot be edited or removed",
+			got, creatorID)
+	}
+}
+
 func TestAddRelativeWritesLocation(t *testing.T) {
 	pool := newTestPool(t)
 	ctx := context.Background()
@@ -717,7 +833,7 @@ func TestAddRelativeWritesLocation(t *testing.T) {
 	lat, lng := 52.52, 13.405
 
 	p := Person{Summary: Summary{Name: name}, Location: "Berlin", Lat: &lat, Lng: &lng}
-	err := m.AddRelative(ctx, p, subjectID, "child", testUser)
+	err := m.AddRelative(ctx, p, subjectID, relOwner(t, pool), "child", testUser)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -743,7 +859,7 @@ func TestAddRelativeDuplicateName(t *testing.T) {
 
 	subjectID, subjectName := newTestPerson(t, pool)
 
-	err := m.AddRelative(ctx, Person{Summary: Summary{Name: subjectName}}, subjectID, "child", testUser)
+	err := m.AddRelative(ctx, Person{Summary: Summary{Name: subjectName}}, subjectID, relOwner(t, pool), "child", testUser)
 	if !errors.Is(err, ErrDuplicateName) {
 		t.Fatalf("got %v; want %v", err, ErrDuplicateName)
 	}
@@ -758,7 +874,7 @@ func TestAddRelativeUnknownRelation(t *testing.T) {
 	name := relName(t, pool, "Rel Added Unknown")
 
 	p := Person{Summary: Summary{Name: name}, Location: "Berlin"}
-	err := m.AddRelative(ctx, p, subjectID, "cousin", testUser)
+	err := m.AddRelative(ctx, p, subjectID, relOwner(t, pool), "cousin", testUser)
 	if err == nil {
 		t.Fatal("got nil; want an error for an unknown relation")
 	}
@@ -784,7 +900,7 @@ func TestAddRelativeRollsBackOnFailure(t *testing.T) {
 
 	name := relName(t, pool, "Rel Added Doomed")
 
-	err = m.AddRelative(ctx, Person{Summary: Summary{Name: name}}, missingID, "parent", testUser)
+	err = m.AddRelative(ctx, Person{Summary: Summary{Name: name}}, missingID, relOwner(t, pool), "parent", testUser)
 	if err == nil {
 		t.Fatal("got nil; want an error for a relative that does not exist")
 	}

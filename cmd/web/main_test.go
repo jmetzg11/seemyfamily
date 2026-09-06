@@ -58,6 +58,45 @@ func newTestApp(t *testing.T) *application {
 	}
 }
 
+func giveOwner(t *testing.T, app *application, personID, userID int) {
+	t.Helper()
+
+	_, err := app.people.DB.Exec(context.Background(),
+		`INSERT INTO api_person_owners (person_id, user_id) VALUES ($1, $2)`, personID, userID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// newTestAccount is an account for a test to act as. Creating a person writes
+// an api_person_owners row pointing at the account, so those rows are cleared
+// here: registered after haNewUser's own cleanup, this runs before it, and the
+// account can go.
+func newTestAccount(t *testing.T, app *application) models.User {
+	t.Helper()
+
+	id, name := haNewUser(t, app)
+
+	t.Cleanup(func() {
+		_, err := app.people.DB.Exec(context.Background(),
+			`DELETE FROM api_person_owners WHERE user_id = $1`, id)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	return models.User{ID: id, Name: name}
+}
+
+func newTestOwner(t *testing.T, app *application, personID int) models.User {
+	t.Helper()
+
+	user := newTestAccount(t, app)
+	giveOwner(t, app, personID, user.ID)
+
+	return user
+}
+
 func newTestPerson(t *testing.T, app *application) int {
 	t.Helper()
 
@@ -89,6 +128,7 @@ func newTestPerson(t *testing.T, app *application) int {
 			`DELETE FROM api_marriage WHERE person_a_id = $1 OR person_b_id = $1`,
 			`DELETE FROM api_location WHERE person_id = $1`,
 			`DELETE FROM api_photo WHERE person_id = $1`,
+			`DELETE FROM api_person_owners WHERE person_id = $1`,
 			`DELETE FROM api_person WHERE id = $1`,
 		}
 

@@ -16,9 +16,8 @@ import (
 )
 
 type User struct {
-	ID          int
-	Name        string
-	IsSuperuser bool
+	ID   int
+	Name string
 }
 
 type UserModel struct {
@@ -26,7 +25,7 @@ type UserModel struct {
 }
 
 const authenticateQuery = `
-SELECT id, username, password, is_superuser
+SELECT id, username, password
 FROM auth_user
 WHERE username = $1 AND is_active`
 
@@ -34,7 +33,7 @@ func (m *UserModel) Authenticate(ctx context.Context, name, password string) (Us
 	var u User
 	var hash string
 
-	err := m.DB.QueryRow(ctx, authenticateQuery, name).Scan(&u.ID, &u.Name, &hash, &u.IsSuperuser)
+	err := m.DB.QueryRow(ctx, authenticateQuery, name).Scan(&u.ID, &u.Name, &hash)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return User{}, ErrInvalidCredentials
 	}
@@ -54,14 +53,14 @@ func (m *UserModel) Authenticate(ctx context.Context, name, password string) (Us
 }
 
 const getUserQuery = `
-SELECT id, username, is_superuser
+SELECT id, username
 FROM auth_user
 WHERE id = $1 AND is_active`
 
 func (m *UserModel) Get(ctx context.Context, id int) (User, error) {
 	var u User
 
-	err := m.DB.QueryRow(ctx, getUserQuery, id).Scan(&u.ID, &u.Name, &u.IsSuperuser)
+	err := m.DB.QueryRow(ctx, getUserQuery, id).Scan(&u.ID, &u.Name)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return User{}, ErrNoRecord
 	}

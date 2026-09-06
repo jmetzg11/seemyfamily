@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +15,69 @@ import (
 
 func requestWithUser(r *http.Request, user models.User) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), userContextKey, user))
+}
+
+func mwGiveOwner(t *testing.T, app *application, personID, userID int) {
+	t.Helper()
+
+	_, err := app.people.DB.Exec(context.Background(),
+		`INSERT INTO api_person_owners (person_id, user_id) VALUES ($1, $2)`, personID, userID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRequireOwner(t *testing.T) {
+	app := newTestApp(t)
+
+	// The accounts come first so their cleanup runs last: a person's owner
+	// rows have to go before the account they point at.
+	ownerID, ownerName := haNewUser(t, app)
+	strangerID, strangerName := haNewUser(t, app)
+
+	personID := newTestPerson(t, app)
+	mwGiveOwner(t, app, personID, ownerID)
+
+	missing := strconv.Itoa(hpMissingID(t, app))
+
+	tests := []struct {
+		name       string
+		id         string
+		user       *models.User
+		wantStatus int
+		wantCalled bool
+	}{
+		{"owner", strconv.Itoa(personID), &models.User{ID: ownerID, Name: ownerName}, http.StatusOK, true},
+		{"not the owner", strconv.Itoa(personID), &models.User{ID: strangerID, Name: strangerName}, http.StatusForbidden, false},
+		{"no user", strconv.Itoa(personID), nil, http.StatusForbidden, false},
+		{"missing person", missing, &models.User{ID: ownerID, Name: ownerName}, http.StatusNotFound, false},
+		{"unparseable id", "seven", &models.User{ID: ownerID, Name: ownerName}, http.StatusNotFound, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			called := false
+			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				called = true
+			})
+
+			r := httptest.NewRequest(http.MethodGet, "/person/"+tt.id+"/edit", nil)
+			r.SetPathValue("id", tt.id)
+			if tt.user != nil {
+				r = requestWithUser(r, *tt.user)
+			}
+
+			w := httptest.NewRecorder()
+			app.requireOwner(next).ServeHTTP(w, r)
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("got status %d; want %d — body: %s", w.Code, tt.wantStatus, w.Body)
+			}
+			if called != tt.wantCalled {
+				t.Errorf("got handler called = %v; want %v", called, tt.wantCalled)
+			}
+		})
+	}
 }
 
 func TestBuildCSP(t *testing.T) {

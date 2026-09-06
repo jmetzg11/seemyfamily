@@ -183,7 +183,7 @@ func (app *application) addRelative(w http.ResponseWriter, r *http.Request) {
 	relative, ok := form.validate()
 
 	if ok {
-		err = app.people.AddRelative(r.Context(), relative, id, form.Relation, user.Name)
+		err = app.people.AddRelative(r.Context(), relative, id, user.ID, form.Relation, user.Name)
 		switch {
 		case err == nil:
 			http.Redirect(w, r, "/person/"+strconv.Itoa(id), http.StatusSeeOther)

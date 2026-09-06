@@ -13,8 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
-	"seemyfamily.jmetzg11/internal/models"
 )
 
 func testPNG(t *testing.T, w, h int) []byte {
@@ -68,7 +66,7 @@ func upload(t *testing.T, app *application, id int, description string, content 
 	r := httptest.NewRequest(http.MethodPost, "/person/"+strconv.Itoa(id)+"/photos", buf)
 	r.Header.Set("Content-Type", mw.FormDataContentType())
 	r.SetPathValue("id", strconv.Itoa(id))
-	r = r.WithContext(context.WithValue(r.Context(), userContextKey, models.User{Name: testUser}))
+	r = requestWithUser(r, newTestOwner(t, app, id))
 
 	w := httptest.NewRecorder()
 	app.upload(w, r)

@@ -1,4 +1,4 @@
-.PHONY: run down admin-prod shellplus hooks
+.PHONY: run down admin-prod shellplus hooks check
 
 hooks:
 	@chmod +x .githooks/*
@@ -38,6 +38,17 @@ shellplus:
 	echo "shellplus: $${url##*@}"; \
 	export DATABASE_URL=$$url; \
 	cd admin && uv run python manage.py shell
+
+check:
+	go fmt ./...
+	go vet ./...
+	@if [ -f .env ] && docker compose ps --status running --services 2>/dev/null | grep -qx db; then \
+		set -a; . ./.env; set +a; \
+	else \
+		echo "check: compose is down, so the database and bucket tests will skip."; \
+		unset DATABASE_URL S3_ENDPOINT S3_PUBLIC_URL S3_REGION S3_BUCKET S3_ACCESS_KEY S3_SECRET_KEY; \
+	fi; \
+	go test ./...
 
 down:
 	@pkill -f '[t]mp/web' 2>/dev/null || true

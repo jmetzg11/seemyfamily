@@ -32,13 +32,15 @@ func hrGet(id string) *http.Request {
 	return requestWithUser(r, models.User{Name: testUser})
 }
 
-func hrPost(t *testing.T, id string, values url.Values) *http.Request {
+// hrPost acts as a real account: adding a relative writes an owner row for
+// whoever is signed in, and that column has a foreign key to auth_user.
+func hrPost(t *testing.T, app *application, id string, values url.Values) *http.Request {
 	t.Helper()
 
 	r := postForm(t, values)
 	r.SetPathValue("id", id)
 
-	return requestWithUser(r, models.User{Name: testUser})
+	return requestWithUser(r, newTestAccount(t, app))
 }
 
 func hrBadBody(id string) *http.Request {
@@ -78,6 +80,7 @@ func hrCleanupPeople(t *testing.T, app *application, names ...string) {
 			    OR person_b_id IN (SELECT id FROM api_person WHERE name = $1)`,
 			`DELETE FROM api_location WHERE person_id IN (SELECT id FROM api_person WHERE name = $1)`,
 			`DELETE FROM api_photo WHERE person_id IN (SELECT id FROM api_person WHERE name = $1)`,
+			`DELETE FROM api_person_owners WHERE person_id IN (SELECT id FROM api_person WHERE name = $1)`,
 			`DELETE FROM api_history WHERE recipient = $1`,
 			`DELETE FROM api_person WHERE name = $1`,
 		}
@@ -224,7 +227,7 @@ func TestLinkStoresEachFact(t *testing.T) {
 			otherID := newTestPerson(t, app)
 			otherName := testPersonName(t, app, otherID)
 
-			res := hrCall(app.link, hrPost(t, strconv.Itoa(id), url.Values{"name": {otherName}, "relation": {relation}}))
+			res := hrCall(app.link, hrPost(t, app, strconv.Itoa(id), url.Values{"name": {otherName}, "relation": {relation}}))
 
 			if res.Code != http.StatusSeeOther {
 				t.Fatalf("got status %d; want %d — body: %s", res.Code, http.StatusSeeOther, res.Body)
@@ -264,7 +267,7 @@ func TestLinkRejects(t *testing.T) {
 		t.Run(tt.label, func(t *testing.T) {
 			values := url.Values{"name": {tt.value(name, otherName)}, "relation": {tt.relation}}
 
-			res := hrCall(app.link, hrPost(t, strconv.Itoa(id), values))
+			res := hrCall(app.link, hrPost(t, app, strconv.Itoa(id), values))
 
 			if res.Code != http.StatusUnprocessableEntity {
 				t.Fatalf("got status %d; want %d — body: %s", res.Code, http.StatusUnprocessableEntity, res.Body)
@@ -287,7 +290,7 @@ func TestLinkRejectsDuplicate(t *testing.T) {
 
 	hrLink(t, app, id, otherName, "spouse")
 
-	res := hrCall(app.link, hrPost(t, strconv.Itoa(id), url.Values{"name": {otherName}, "relation": {"spouse"}}))
+	res := hrCall(app.link, hrPost(t, app, strconv.Itoa(id), url.Values{"name": {otherName}, "relation": {"spouse"}}))
 
 	if res.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("got status %d; want %d — body: %s", res.Code, http.StatusUnprocessableEntity, res.Body)
@@ -316,7 +319,7 @@ func TestLinkNotFound(t *testing.T) {
 
 	for label, id := range hrBadIDs() {
 		t.Run(label, func(t *testing.T) {
-			res := hrCall(app.link, hrPost(t, id, url.Values{"name": {"anyone"}, "relation": {"parent"}}))
+			res := hrCall(app.link, hrPost(t, app, id, url.Values{"name": {"anyone"}, "relation": {"parent"}}))
 
 			if res.Code != http.StatusNotFound {
 				t.Errorf("got status %d; want %d — body: %s", res.Code, http.StatusNotFound, res.Body)
@@ -333,7 +336,7 @@ func TestUnlinkRemovesFact(t *testing.T) {
 
 	hrLink(t, app, id, otherName, "child")
 
-	res := hrCall(app.unlink, hrPost(t, strconv.Itoa(id), url.Values{"name": {otherName}, "relation": {"child"}}))
+	res := hrCall(app.unlink, hrPost(t, app, strconv.Itoa(id), url.Values{"name": {otherName}, "relation": {"child"}}))
 
 	if res.Code != http.StatusSeeOther {
 		t.Fatalf("got status %d; want %d — body: %s", res.Code, http.StatusSeeOther, res.Body)
@@ -352,7 +355,7 @@ func TestUnlinkIsIdempotent(t *testing.T) {
 	otherID := newTestPerson(t, app)
 	otherName := testPersonName(t, app, otherID)
 
-	res := hrCall(app.unlink, hrPost(t, strconv.Itoa(id), url.Values{"name": {otherName}, "relation": {"spouse"}}))
+	res := hrCall(app.unlink, hrPost(t, app, strconv.Itoa(id), url.Values{"name": {otherName}, "relation": {"spouse"}}))
 
 	if res.Code != http.StatusSeeOther {
 		t.Fatalf("got status %d; want %d — removing an edge that is not there is deliberately not an error; body: %s",
@@ -370,7 +373,7 @@ func TestUnlinkRejectsNonFactRelation(t *testing.T) {
 		t.Run(strconv.Quote(relation), func(t *testing.T) {
 			values := url.Values{"name": {otherName}, "relation": {relation}}
 
-			res := hrCall(app.unlink, hrPost(t, strconv.Itoa(id), values))
+			res := hrCall(app.unlink, hrPost(t, app, strconv.Itoa(id), values))
 
 			if res.Code != http.StatusBadRequest {
 				t.Errorf("got status %d; want %d — only stored facts can be unlinked; body: %s",
@@ -396,7 +399,7 @@ func TestUnlinkNotFound(t *testing.T) {
 
 	for label, id := range hrBadIDs() {
 		t.Run(label, func(t *testing.T) {
-			res := hrCall(app.unlink, hrPost(t, id, url.Values{"name": {"anyone"}, "relation": {"parent"}}))
+			res := hrCall(app.unlink, hrPost(t, app, id, url.Values{"name": {"anyone"}, "relation": {"parent"}}))
 
 			if res.Code != http.StatusNotFound {
 				t.Errorf("got status %d; want %d — body: %s", res.Code, http.StatusNotFound, res.Body)
@@ -453,7 +456,7 @@ func TestAddRelativeCreatesAndLinks(t *testing.T) {
 
 			values := url.Values{"name": {name}, "relation": {relation}, "birthyear": {"1900"}, "location": {"London"}, "lat": {"51.5"}, "lng": {"-0.12"}}
 
-			res := hrCall(app.addRelative, hrPost(t, strconv.Itoa(id), values))
+			res := hrCall(app.addRelative, hrPost(t, app, strconv.Itoa(id), values))
 
 			if res.Code != http.StatusSeeOther {
 				t.Fatalf("got status %d; want %d — body: %s", res.Code, http.StatusSeeOther, res.Body)
@@ -481,7 +484,7 @@ func TestAddRelativeSiblingCopiesParents(t *testing.T) {
 
 	hrLink(t, app, id, parentName, "parent")
 
-	res := hrCall(app.addRelative, hrPost(t, strconv.Itoa(id), url.Values{"name": {name}, "relation": {"sibling"}}))
+	res := hrCall(app.addRelative, hrPost(t, app, strconv.Itoa(id), url.Values{"name": {name}, "relation": {"sibling"}}))
 
 	if res.Code != http.StatusSeeOther {
 		t.Fatalf("got status %d; want %d — body: %s", res.Code, http.StatusSeeOther, res.Body)
@@ -510,7 +513,7 @@ func TestAddRelativeSiblingInventsUnknownParent(t *testing.T) {
 	placeholder := "Unknown parent of " + testPersonName(t, app, id)
 	hrCleanupPeople(t, app, name, placeholder)
 
-	res := hrCall(app.addRelative, hrPost(t, strconv.Itoa(id), url.Values{"name": {name}, "relation": {"sibling"}}))
+	res := hrCall(app.addRelative, hrPost(t, app, strconv.Itoa(id), url.Values{"name": {name}, "relation": {"sibling"}}))
 
 	if res.Code != http.StatusSeeOther {
 		t.Fatalf("got status %d; want %d — body: %s", res.Code, http.StatusSeeOther, res.Body)
@@ -554,7 +557,7 @@ func TestAddRelativeRejectsInvalidForm(t *testing.T) {
 			id := newTestPerson(t, app)
 			values := url.Values{"name": {tt.name}, "relation": {tt.relation}, "birthyear": {tt.birthyear}}
 
-			res := hrCall(app.addRelative, hrPost(t, strconv.Itoa(id), values))
+			res := hrCall(app.addRelative, hrPost(t, app, strconv.Itoa(id), values))
 
 			if res.Code != http.StatusUnprocessableEntity {
 				t.Fatalf("got status %d; want %d — body: %s", res.Code, http.StatusUnprocessableEntity, res.Body)
@@ -580,7 +583,7 @@ func TestAddRelativeRejectsDuplicateName(t *testing.T) {
 	takenID := newTestPerson(t, app)
 	taken := testPersonName(t, app, takenID)
 
-	res := hrCall(app.addRelative, hrPost(t, strconv.Itoa(id), url.Values{"name": {taken}, "relation": {"child"}}))
+	res := hrCall(app.addRelative, hrPost(t, app, strconv.Itoa(id), url.Values{"name": {taken}, "relation": {"child"}}))
 
 	if res.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("got status %d; want %d — a taken name is a form error, not a 500; body: %s",
@@ -614,7 +617,7 @@ func TestAddRelativeNotFound(t *testing.T) {
 		t.Run(label, func(t *testing.T) {
 			values := url.Values{"name": {hrName("never created")}, "relation": {"child"}}
 
-			res := hrCall(app.addRelative, hrPost(t, id, values))
+			res := hrCall(app.addRelative, hrPost(t, app, id, values))
 
 			if res.Code != http.StatusNotFound {
 				t.Errorf("got status %d; want %d — body: %s", res.Code, http.StatusNotFound, res.Body)

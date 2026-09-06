@@ -132,6 +132,25 @@ func (m *PersonModel) Get(ctx context.Context, id int) (Person, error) {
 	return p, err
 }
 
+const isOwnerQuery = `
+SELECT exists (
+	SELECT 1 FROM api_person_owners
+	WHERE person_id = p.id AND user_id = $2
+)
+FROM api_person p
+WHERE p.id = $1`
+
+func (m *PersonModel) IsOwner(ctx context.Context, personID, userID int) (bool, error) {
+	var owner bool
+
+	err := m.DB.QueryRow(ctx, isOwnerQuery, personID, userID).Scan(&owner)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false, ErrNoRecord
+	}
+
+	return owner, err
+}
+
 const updateQuery = `
 UPDATE api_person
 SET name = $2,

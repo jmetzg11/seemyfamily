@@ -31,6 +31,15 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
+func (app *application) canEdit(r *http.Request, personID int) (bool, error) {
+	user, ok := userFromContext(r)
+	if !ok {
+		return false, nil
+	}
+
+	return app.people.IsOwner(r.Context(), personID, user.ID)
+}
+
 func (app *application) newTemplateData(r *http.Request) templateData {
 	data := templateData{
 		MediaURL: app.bucket.PublicURL,

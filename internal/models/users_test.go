@@ -91,7 +91,7 @@ func TestAuthenticate(t *testing.T) {
 		if err != nil {
 			t.Fatalf("got error %v; want nil", err)
 		}
-		want := User{ID: id, Name: username, IsSuperuser: true}
+		want := User{ID: id, Name: username}
 		if got != want {
 			t.Errorf("got %+v; want %+v", got, want)
 		}
@@ -147,7 +147,7 @@ func TestUserGet(t *testing.T) {
 		if err != nil {
 			t.Fatalf("got error %v; want nil", err)
 		}
-		want := User{ID: id, Name: username, IsSuperuser: true}
+		want := User{ID: id, Name: username}
 		if got != want {
 			t.Errorf("got %+v; want %+v", got, want)
 		}

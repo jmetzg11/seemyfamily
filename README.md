@@ -32,6 +32,7 @@ To wipe the database and object store and start over: `make down`.
 
 ## 
 - Django admin is just for content management. Can connect to prod locally via `make admin-prod`. Django admin also handles DB migrations 
+- Anyone can read the site; only a person's owners can edit or delete them. Adding a relative makes you that new person's only owner.
 - Only Parent <-> Child and Marriages are recorded. Everything else is inferred through DB queries (e.g. adding a sibling means adding the shared parent)
 
 

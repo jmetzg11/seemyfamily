@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"seemyfamily.jmetzg11/internal/models"
 )
@@ -79,6 +80,33 @@ func (app *application) requireAuth(next http.Handler) http.Handler {
 		}
 
 		w.Header().Set("Cache-Control", "no-store")
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) requireOwner(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil || id < 1 {
+			app.notFound(w)
+			return
+		}
+
+		owner, err := app.canEdit(r, id)
+		if err != nil {
+			if errors.Is(err, models.ErrNoRecord) {
+				app.notFound(w)
+			} else {
+				app.serverError(w, r, err)
+			}
+			return
+		}
+
+		if !owner {
+			app.clientError(w, http.StatusForbidden)
+			return
+		}
 
 		next.ServeHTTP(w, r)
 	})
