@@ -17,7 +17,8 @@ func TestMain(m *testing.M) {
 // TestAppMailerCannotSend keeps the suite from emailing real people. Tests are
 // run with .env sourced, so GMAIL_USER and GMAIL_PASS may well be set; the test
 // app has to carry a client that refuses to send no matter what is in the
-// environment.
+// environment. It is also what makes notify a no-op here, so handler tests do
+// not leave goroutines querying a pool they are about to close.
 func TestAppMailerCannotSend(t *testing.T) {
 	app := newTestApp(t)
 

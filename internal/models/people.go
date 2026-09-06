@@ -167,10 +167,6 @@ SET name = EXCLUDED.name, lat = EXCLUDED.lat, lng = EXCLUDED.lng`
 
 const deleteLocationQuery = `DELETE FROM api_location WHERE person_id = $1`
 
-const historyQuery = `
-INSERT INTO api_history (created_at, username, action, recipient)
-VALUES (now(), $1, $2, $3)`
-
 func (m *PersonModel) Update(ctx context.Context, p Person, username string) error {
 	tx, err := m.DB.Begin(ctx)
 	if err != nil {
@@ -195,7 +191,7 @@ func (m *PersonModel) Update(ctx context.Context, p Person, username string) err
 		return err
 	}
 
-	_, err = tx.Exec(ctx, historyQuery, username, "updated details", p.Name)
+	_, err = tx.Exec(ctx, historyQuery, username, ActionUpdated, p.Name)
 	if err != nil {
 		return err
 	}
@@ -240,7 +236,7 @@ func (m *PersonModel) Delete(ctx context.Context, id int, username string) error
 		return err
 	}
 
-	_, err = tx.Exec(ctx, historyQuery, username, "deleted profile", name)
+	_, err = tx.Exec(ctx, historyQuery, username, ActionDeleted, name)
 	if err != nil {
 		return err
 	}

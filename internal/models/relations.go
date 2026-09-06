@@ -285,7 +285,7 @@ func (m *PersonModel) AddRelative(ctx context.Context, p Person, relativeID, own
 		return err
 	}
 
-	_, err = tx.Exec(ctx, historyQuery, username, "created", p.Name)
+	_, err = tx.Exec(ctx, historyQuery, username, ActionCreated, p.Name)
 	if err != nil {
 		return err
 	}
@@ -329,10 +329,10 @@ func (m *PersonModel) relate(ctx context.Context, id int, name, relation, userna
 		return ErrSelfLink
 	}
 
-	verb := "removed"
+	action := ActionRemoved(relation)
 
 	if link {
-		verb = "added"
+		action = ActionAdded(relation)
 		err = insertFact(ctx, tx, id, otherID, relation)
 	} else {
 		err = deleteFact(ctx, tx, id, otherID, relation)
@@ -348,7 +348,7 @@ func (m *PersonModel) relate(ctx context.Context, id int, name, relation, userna
 		return err
 	}
 
-	_, err = tx.Exec(ctx, historyQuery, username, verb+" "+relation, subject)
+	_, err = tx.Exec(ctx, historyQuery, username, action, subject)
 	if err != nil {
 		return err
 	}

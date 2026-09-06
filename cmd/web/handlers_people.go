@@ -148,6 +148,7 @@ func (app *application) edit(w http.ResponseWriter, r *http.Request) {
 		err = app.people.Update(r.Context(), person, user.Name)
 		switch {
 		case err == nil:
+			app.notify(user, models.KindEdit)
 			http.Redirect(w, r, "/person/"+strconv.Itoa(id), http.StatusSeeOther)
 			return
 		case errors.Is(err, models.ErrNoRecord):
@@ -218,6 +219,8 @@ func (app *application) delete(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	app.notify(user, models.KindDelete)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

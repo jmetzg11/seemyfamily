@@ -83,6 +83,7 @@ func (app *application) link(w http.ResponseWriter, r *http.Request) {
 		err = app.people.Link(r.Context(), id, form.Name, form.Relation, user.Name)
 		switch {
 		case err == nil:
+			app.notify(user, models.KindCreate)
 			http.Redirect(w, r, "/person/"+strconv.Itoa(id)+"/relatives", http.StatusSeeOther)
 			return
 		case errors.Is(err, models.ErrNoRecord):
@@ -123,7 +124,10 @@ func (app *application) unlink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = app.people.Unlink(r.Context(), id, name, relation, user.Name)
-	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+	switch {
+	case err == nil:
+		app.notify(user, models.KindDelete)
+	case !errors.Is(err, models.ErrNoRecord):
 		app.serverError(w, r, err)
 		return
 	}
@@ -186,6 +190,7 @@ func (app *application) addRelative(w http.ResponseWriter, r *http.Request) {
 		err = app.people.AddRelative(r.Context(), relative, id, user.ID, form.Relation, user.Name)
 		switch {
 		case err == nil:
+			app.notify(user, models.KindCreate)
 			http.Redirect(w, r, "/person/"+strconv.Itoa(id), http.StatusSeeOther)
 			return
 		case errors.Is(err, models.ErrDuplicateName):

@@ -80,7 +80,7 @@ func (m *PhotoModel) Insert(ctx context.Context, personID int, key, description,
 		return err
 	}
 
-	_, err = tx.Exec(ctx, historyQuery, username, "added photo", name)
+	_, err = tx.Exec(ctx, historyQuery, username, ActionPhoto, name)
 	if err != nil {
 		return err
 	}

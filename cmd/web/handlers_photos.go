@@ -128,5 +128,7 @@ func (app *application) upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	app.notify(user, models.KindCreate)
+
 	http.Redirect(w, r, "/person/"+strconv.Itoa(id)+"/photos", http.StatusSeeOther)
 }
