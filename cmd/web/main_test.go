@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"seemyfamily.jmetzg11/internal/mailer"
 	"seemyfamily.jmetzg11/internal/models"
 	"seemyfamily.jmetzg11/internal/storage"
 )
@@ -53,6 +54,7 @@ func newTestApp(t *testing.T) *application {
 		photos:        &models.PhotoModel{DB: pool},
 		locations:     &models.LocationModel{DB: pool},
 		bucket:        bucket,
+		mailer:        &mailer.Client{},
 		csp:           buildCSP(bucket.PublicURL),
 		sessionSecret: []byte(testSecret),
 	}

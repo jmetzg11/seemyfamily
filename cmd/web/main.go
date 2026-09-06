@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"seemyfamily.jmetzg11/internal/mailer"
 	"seemyfamily.jmetzg11/internal/models"
 	"seemyfamily.jmetzg11/internal/storage"
 )
@@ -23,6 +24,7 @@ type application struct {
 	photos        *models.PhotoModel
 	locations     *models.LocationModel
 	bucket        *storage.Client
+	mailer        *mailer.Client
 	csp           string
 	sessionSecret []byte
 	secureCookies bool
@@ -40,6 +42,17 @@ func main() {
 		Bucket:    mustGetenv(logger, "S3_BUCKET"),
 		AccessKey: mustGetenv(logger, "S3_ACCESS_KEY"),
 		SecretKey: mustGetenv(logger, "S3_SECRET_KEY"),
+	}
+
+	mail := &mailer.Client{
+		Host:     "smtp.gmail.com",
+		Port:     "587",
+		Username: os.Getenv("GMAIL_USER"),
+		Password: os.Getenv("GMAIL_PASS"),
+	}
+
+	if !mail.Configured() {
+		logger.Warn("GMAIL_USER or GMAIL_PASS is not set; email will not be sent")
 	}
 
 	sessionSecret := os.Getenv("SESSION_SECRET")
@@ -81,6 +94,7 @@ func main() {
 		photos:        &models.PhotoModel{DB: pool},
 		locations:     &models.LocationModel{DB: pool},
 		bucket:        bucket,
+		mailer:        mail,
 		csp:           buildCSP(bucket.PublicURL),
 		sessionSecret: []byte(sessionSecret),
 		secureCookies: secureCookies,
