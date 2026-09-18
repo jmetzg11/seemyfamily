@@ -59,8 +59,6 @@ WHERE p.name ILIKE $1
 ORDER BY %s %s, p.id
 LIMIT $2 OFFSET $3`
 
-const countQuery = `SELECT count(*) FROM api_person WHERE name ILIKE $1`
-
 func (m *PersonModel) List(ctx context.Context, search, sort, dir string, limit, offset int) ([]Person, error) {
 	column, ok := sortColumns[sort]
 	if !ok {
@@ -90,6 +88,8 @@ func (m *PersonModel) List(ctx context.Context, search, sort, dir string, limit,
 
 	return people, rows.Err()
 }
+
+const countQuery = `SELECT count(*) FROM api_person WHERE name ILIKE $1`
 
 func (m *PersonModel) Count(ctx context.Context, search string) (int, error) {
 	var total int

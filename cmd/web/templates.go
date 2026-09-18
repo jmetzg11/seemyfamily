@@ -31,6 +31,7 @@ type templateData struct {
 
 	People      []models.Person
 	Person      models.Person
+	Tree        models.Node
 	Relations   []models.RelationGroup
 	Facts       []models.Fact
 	Photos      []models.Photo

@@ -19,6 +19,7 @@ type application struct {
 	logger        *slog.Logger
 	templateCache map[string]*template.Template
 	people        *models.PersonModel
+	tree          *models.TreeModel
 	users         *models.UserModel
 	stats         *models.InfoModel
 	photos        *models.PhotoModel
@@ -89,6 +90,7 @@ func main() {
 		logger:        logger,
 		templateCache: templateCache,
 		people:        &models.PersonModel{DB: pool},
+		tree:          &models.TreeModel{DB: pool},
 		users:         &models.UserModel{DB: pool},
 		stats:         &models.InfoModel{DB: pool},
 		photos:        &models.PhotoModel{DB: pool},
